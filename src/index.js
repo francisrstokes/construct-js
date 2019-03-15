@@ -101,7 +101,7 @@ class Byte extends DataValue {
 
 class Word extends DataValue {
   constructor(value, littleEndian = true) {
-    super(2, 'Uint8', true, value, littleEndian);
+    super(2, 'Uint16', true, value, littleEndian);
   }
   set(value) {
     return super.set([value]);
@@ -110,7 +110,7 @@ class Word extends DataValue {
 
 class DoubleWord extends DataValue {
   constructor(value, littleEndian = true) {
-    super(4, 'Uint8', true, value, littleEndian);
+    super(4, 'Uint32', true, value, littleEndian);
   }
   set(value) {
     return super.set([value]);
