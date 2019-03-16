@@ -62,13 +62,13 @@ class Bytes extends DataValue {
 
 class Words extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
-    super(2, 'Uint8', false, sizeOrDataArray, littleEndian);
+    super(2, 'Uint16', false, sizeOrDataArray, littleEndian);
   }
 }
 
 class DoubleWords extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
-    super(4, 'Uint8', false, sizeOrDataArray, littleEndian);
+    super(4, 'Uint32', false, sizeOrDataArray, littleEndian);
   }
 }
 
@@ -80,13 +80,13 @@ class SignedBytes extends DataValue {
 
 class SignedWords extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
-    super(2, 'Int8', false, sizeOrDataArray, littleEndian);
+    super(2, 'Int16', false, sizeOrDataArray, littleEndian);
   }
 }
 
 class SignedDoubleWords extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
-    super(4, 'Int8', false, sizeOrDataArray, littleEndian);
+    super(4, 'Int32', false, sizeOrDataArray, littleEndian);
   }
 }
 
@@ -128,7 +128,7 @@ class SignedByte extends DataValue {
 
 class SignedWord extends DataValue {
   constructor(value, littleEndian = true) {
-    super(2, 'Int8', true, value, littleEndian);
+    super(2, 'Int16', true, value, littleEndian);
   }
   set(value) {
     return super.set([value]);
@@ -137,7 +137,7 @@ class SignedWord extends DataValue {
 
 class SignedDoubleWord extends DataValue {
   constructor(value, littleEndian = true) {
-    super(4, 'Int8', true, value, littleEndian);
+    super(4, 'Int32', true, value, littleEndian);
   }
   set(value) {
     return super.set([value]);
