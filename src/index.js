@@ -144,7 +144,6 @@ class SignedDoubleWord extends DataValue {
   }
 }
 
-
 class Struct {
   constructor(name, littleEndian = true) {
     this.name = name;
@@ -235,15 +234,105 @@ class Struct {
   }
 }
 
+class Bits {
+  constructor(size, value = 0) {
+    this._size = size;
+    this._value = value;
+  }
+
+  set(value) {
+    this._value = value;
+    return this;
+  }
+
+  getBits() {
+    return Array.from({length: this._size}, (_, i) => {
+      return (this._value & 2**i) >> i
+    });
+  }
+
+  value() {
+    return this._value;
+  }
+
+  size() {
+    return this._size;
+  }
+}
+
+class BitStruct extends Struct {
+  multiBit(name, size, value) {
+    this.fields.push([name, new Bits(size, value)]);
+    return this;
+  }
+
+  field(name, size, value) {
+    return this.multiBit(name, size, value);
+  }
+
+  flag(name, value) {
+    this.fields.push([name, new Bits(1, value)]);
+    return this;
+  }
+
+  getOffset(name) {
+    const ind = this.fields.findIndex(([n]) => n === name);
+    if (ind === -1) {
+      throw new Error(`No field ${name} in BitStruct ${this.name}`);
+    }
+
+    let size = 0;
+    for (let i = 0; i < ind; i++) {
+      const field = this.fields[i][1];
+        size += field.size;
+    }
+    return size;
+  }
+
+  computeBufferSize() {
+    const bits = this.fields.reduce((acc, [_, {size}]) => acc + size, 0);
+    return Math.ceil(bits / 8);
+  }
+
+  toBuffer() {
+    const bits = this.fields.reduce((bits, [_, field]) => {
+      return [...bits, ...field.getBits()];
+    }, []);
+
+    const bytes = bits.reduce((bytes, bit, i) => {
+      const byteIndex = Math.floor(i/8);
+      const bitIndex = i % 8;
+      bytes[byteIndex] += bit << bitIndex;
+      return bytes;
+    }, Array.from({length: this.computeBufferSize()}).fill(0));
+
+    return Buffer.from(bytes);
+  }
+}
 
 module.exports = {
   RawString: (str, littleEndian = true) => new Bytes(str.split('').map(c => c.charCodeAt(0)), littleEndian),
+
+  U8s: (sizeOrDataArray, littleEndian = true) => new Bytes(sizeOrDataArray, littleEndian),
+  U16s: (sizeOrDataArray, littleEndian = true) => new Words(sizeOrDataArray, littleEndian),
+  U32s: (sizeOrDataArray, littleEndian = true) => new DoubleWords(sizeOrDataArray, littleEndian),
+  I8s: (sizeOrDataArray, littleEndian = true) => new SignedBytes(sizeOrDataArray, littleEndian),
+  I16s: (sizeOrDataArray, littleEndian = true) => new SignedWords(sizeOrDataArray, littleEndian),
+  I32s: (sizeOrDataArray, littleEndian = true) => new SignedDoubleWords(sizeOrDataArray, littleEndian),
+
   Bytes: (sizeOrDataArray, littleEndian = true) => new Bytes(sizeOrDataArray, littleEndian),
   Words: (sizeOrDataArray, littleEndian = true) => new Words(sizeOrDataArray, littleEndian),
   DoubleWords: (sizeOrDataArray, littleEndian = true) => new DoubleWords(sizeOrDataArray, littleEndian),
   SignedBytes: (sizeOrDataArray, littleEndian = true) => new SignedBytes(sizeOrDataArray, littleEndian),
   SignedWords: (sizeOrDataArray, littleEndian = true) => new SignedWords(sizeOrDataArray, littleEndian),
   SignedDoubleWords: (sizeOrDataArray, littleEndian = true) => new SignedDoubleWords(sizeOrDataArray, littleEndian),
+
+  U8: (value, littleEndian = true) => new Byte(value, littleEndian),
+  U16: (value, littleEndian = true) => new Word(value, littleEndian),
+  U32: (value, littleEndian = true) => new DoubleWord(value, littleEndian),
+  I8: (value, littleEndian = true) => new SignedByte(value, littleEndian),
+  I16: (value, littleEndian = true) => new SignedWord(value, littleEndian),
+  I32: (value, littleEndian = true) => new SignedDoubleWord(value, littleEndian),
 
   Byte: (value, littleEndian = true) => new Byte(value, littleEndian),
   Word: (value, littleEndian = true) => new Word(value, littleEndian),
@@ -253,4 +342,5 @@ module.exports = {
   SignedDoubleWord: (value, littleEndian = true) => new SignedDoubleWord(value, littleEndian),
 
   Struct: (name, littleEndian = true) => new Struct(name, littleEndian),
+  BitStruct: (name) => new BitStruct(name),
 };

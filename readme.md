@@ -2,6 +2,11 @@
 
 `construct-js` is a library for creating byte level data structures. It focuses on a declarative API and simplicity of use.
 
+```bash
+npm i construct-js
+```
+
+
 - [1. Example](#example)
 - [2. API](#api)
   - [2.1 Struct](#struct)
@@ -13,20 +18,40 @@
     - [2.1.6 getDeepOffset](#getDeepOffset)
     - [2.1.7 computeBufferSize](#computeBufferSize)
     - [2.1.8 toBuffer](#toBuffer)
-  - [2.2 Fields](#fields)
-    - [2.2.1 Byte](#Byte)
-    - [2.2.2 Word](#Word)
-    - [2.2.3 DoubleWord](#DoubleWord)
-    - [2.2.4 SignedByte](#SignedByte)
-    - [2.2.5 SignedWord](#SignedWord)
-    - [2.2.6 SignedDoubleWord](#SignedDoubleWord)
-    - [2.2.7 RawString](#RawString)
-    - [2.2.8 Bytes](#Bytes)
-    - [2.2.9 Words](#Words)
-    - [2.2.10 DoubleWords](#DoubleWords)
-    - [2.2.11 SignedBytes](#SignedBytes)
-    - [2.2.12 SignedWords](#SignedWords)
-    - [2.2.13 SignedDoubleWords](#SignedDoubleWords)
+  - [2.2 BitStruct](#bitstruct)
+    - [2.2.1 flag](#flag)
+    - [2.2.2 multiBit](#multiBit)
+    - [2.2.3 getOffset](#getOffset-1)
+    - [2.2.4 computeBufferSize](#computeBufferSize-1)
+    - [2.2.5 toBuffer](#toBuffer-1)
+  - [2.3 Fields](#fields)
+    - [2.3.1 U8](#U8)
+    - [2.3.2 U16](#U16)
+    - [2.3.3 U32](#U32)
+    - [2.3.4 I8](#I8)
+    - [2.3.5 I16](#I16)
+    - [2.3.6 I32](#I32)
+    - [2.3.7 RawString](#RawString)
+    - [2.3.8 U8s](#U8s)
+    - [2.3.9 U16s](#U16s)
+    - [2.3.10 U32s](#U32s)
+    - [2.3.11 I8s](#I8s)
+    - [2.3.12 I16s](#I16s)
+    - [2.3.13 I32s](#I32s)
+  - [2.4 Fields (Deprecated)](#fields-deprecated)
+    - [2.4.1 Byte](#Byte)
+    - [2.4.2 Word](#Word)
+    - [2.4.3 DoubleWord](#DoubleWord)
+    - [2.4.4 SignedByte](#SignedByte)
+    - [2.4.5 SignedWord](#SignedWord)
+    - [2.4.6 SignedDoubleWord](#SignedDoubleWord)
+    - [2.4.7 RawString](#RawStrng)
+    - [2.4.8 Bytes](#Bytes)
+    - [2.4.9 Words](#Words)
+    - [2.4.10 DoubleWords](#DoubleWords)
+    - [2.4.11 SignedBytes](#SignedBytes)
+    - [2.4.12 SignedWords](#SignedWords)
+    - [2.4.13 SignedDoubleWords](#SignedDoubleWords)
 
 ## Example
 
@@ -165,53 +190,91 @@ Returns the size of the struct in bytes.
 
 Returns a `Buffer` representation of the Struct.
 
+### BitStruct
+
+`BitStruct(name)`
+
+Creates a BitStruct object, for storing and addressing data on the sub-byte level.
+
+**Note**: When [bitStruct.toBuffer()](#tobuffer-1) is used, the resulting buffer will be byte aligned. This means if the size of the BitStruct is 12-bits, the resulting buffer will be 16-bits (2 bytes).
+
+#### flag
+
+`.flag(name, value)`
+
+Sets a 1-bit flag in the structure.
+
+#### multiBit
+
+`.multiBit(name, size, value)`
+
+Sets a multi-bit flag of *size*.
+
+#### getOffset
+
+`.getOffset(name)`
+
+Gets the **bit** offset of the data with *name*.
+
+#### computeBufferSize
+
+`.computeBufferSize()`
+
+Returns the size of the BitStruct in **bytes**.
+
+#### toBuffer
+
+`.toBuffer()`
+
+Returns a byte-aligned `Buffer` representing the BitStruct.
+
 ### Fields
 
 All fields contain some common properties and methods. These are:
 
-**.set(value | values)**
+`.set(value | values)`
 
 Which sets either the value or values of the field.
 
-**.setIsLittleEndian(trueOrFalse)**
+`.setIsLittleEndian(trueOrFalse)`
 
 Manually sets this field to little or big endian.
 
 The rest of the properties should be considered private and not modifed directly.
 
-#### Byte
+#### U8
 
-`Byte(value)`
+`U8(value)`
 
 A single 8-bit unsigned value.
 
-#### Word
+#### U16
 
-`Word(value)`
+`U16(value)`
 
 A single 16-bit unsigned value.
 
-#### DoubleWord
+#### U32
 
-`DoubleWord(value)`
+`U32(value)`
 
 A single 32-bit unsigned value.
 
-#### SignedByte
+#### I8
 
-`SignedByte(value)`
+`I8(value)`
 
 A single 8-bit signed value.
 
-#### SignedWord
+#### I16
 
-`SignedWord(value)`
+`I16(value)`
 
 A single 16-bit signed value.
 
-#### SignedDoubleWord
+#### I32
 
-`SignedDoubleWord(value)`
+`I32(value)`
 
 A single 32-bit signed value.
 
@@ -221,49 +284,150 @@ A single 32-bit signed value.
 
 A collection of 8-bit unsigned values, interpreted directly from the string provided. The size of the field is the **byte length** of the string (which is not always the `string.length` when considering unicode).
 
-#### Bytes
+#### U8s
 
-`Bytes(array | number)`
+`U8s(array | number)`
 
 A collection of 8-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
 
-#### Words
+#### U16s
 
-`Words(array | number)`
+`U16s(array | number)`
 
 A collection of 16-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
-#### DoubleWords
+#### U32s
 
-`DoubleWords(array | number)`
+`U32s(array | number)`
 
 A collection of 32-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
 
-#### SignedBytes
+#### I8s
 
-`SignedBytes(array | number)`
+`I8s(array | number)`
 
 A collection of 8-bit signed values.
 
 If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
 
-#### SignedWords
+#### I16s
 
-`SignedWords(array | number)`
+`I16s(array | number)`
 
 A collection of 16-bit signed values.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
-#### SignedDoubleWords
+#### I32s
 
-`SignedDoubleWords(array | number)`
+`I32s(array | number)`
+
+A collection of 32-bit signed values.
+
+If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
+
+
+### Fields (Deprecated)
+
+**These fields are the same as those above, but using outdated and ambiguous terminology.**
+
+All fields contain some common properties and methods. These are:
+
+`.set(value | values)`
+
+Which sets either the value or values of the field.
+
+`.setIsLittleEndian(trueOrFalse)`
+
+Manually sets this field to little or big endian.
+
+The rest of the properties should be considered private and not modifed directly.
+
+#### U8
+
+`U8(value)`
+
+A single 8-bit unsigned value.
+
+#### U16
+
+`U16(value)`
+
+A single 16-bit unsigned value.
+
+#### U32
+
+`U32(value)`
+
+A single 32-bit unsigned value.
+
+#### I8
+
+`I8(value)`
+
+A single 8-bit signed value.
+
+#### I16
+
+`I16(value)`
+
+A single 16-bit signed value.
+
+#### I32
+
+`I32(value)`
+
+A single 32-bit signed value.
+
+#### U8s
+
+`U8s(array | number)`
+
+A collection of 8-bit unsigned values.
+
+If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
+
+#### U16s
+
+`U16s(array | number)`
+
+A collection of 16-bit unsigned values.
+
+If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
+
+#### U32s
+
+`U32s(array | number)`
+
+A collection of 32-bit unsigned values.
+
+If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
+
+#### I8s
+
+`I8s(array | number)`
+
+A collection of 8-bit signed values.
+
+If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
+
+#### I16s
+
+`I16s(array | number)`
+
+A collection of 16-bit signed values.
+
+If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
+
+#### I32s
+
+`I32s(array | number)`
 
 A collection of 32-bit signed values.
 
