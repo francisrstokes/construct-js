@@ -240,7 +240,7 @@ Which sets either the value or values of the field.
 
 Manually sets this field to little or big endian.
 
-The rest of the properties should be considered private and not modifed directly.
+The rest of the properties should be considered private and not modified directly.
 
 #### U8
 
@@ -347,7 +347,7 @@ Which sets either the value or values of the field.
 
 Manually sets this field to little or big endian.
 
-The rest of the properties should be considered private and not modifed directly.
+The rest of the properties should be considered private and not modified directly.
 
 #### U8
 
