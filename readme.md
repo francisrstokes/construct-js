@@ -61,8 +61,8 @@ The following example builds a completely valid zip archive with one file inside
 const fs = require('fs');
 const {
   RawString,
-  Word,
-  DoubleWord,
+  U16,
+  U32,
   Struct,
 } = require('construct-js');
 
@@ -70,42 +70,42 @@ const data = RawString('helloworldhelloworldhelloworldhelloworldhelloworldhellow
 const filename = RawString('helloworld.txt');
 
 const sharedHeaderInfo = Struct('sharedHeaderInfo')
-  .field('minVersion', Word(10))
-  .field('gpFlag', Word(0))
-  .field('compressionMethod', Word(0))
-  .field('lastModifiedTime', Word(0))
-  .field('lastModifiedDate', Word(0))
-  .field('crc32', DoubleWord(0))
-  .field('compressedSized', DoubleWord(data.byteLength))
-  .field('uncompressedSized', DoubleWord(data.byteLength))
-  .field('filenameSize', Word(filename.byteLength))
-  .field('extraFieldLength', Word(0));
+  .field('minVersion', U16(10))
+  .field('gpFlag', U16(0))
+  .field('compressionMethod', U16(0))
+  .field('lastModifiedTime', U16(0))
+  .field('lastModifiedDate', U16(0))
+  .field('crc32', U32(0))
+  .field('compressedSized', U32(data.byteLength))
+  .field('uncompressedSized', U32(data.byteLength))
+  .field('filenameSize', U16(filename.byteLength))
+  .field('extraFieldLength', U16(0));
 
 const localHeader = Struct('localHeader')
-  .field('header', DoubleWord(0x04034b50))
+  .field('header', U32(0x04034b50))
   .field('sharedHeaderInfo', sharedHeaderInfo)
   .field('filename', filename);
 
 const centralDirectory = Struct('centralDirectory')
-  .field('header', DoubleWord(0x02014b50))
-  .field('madeByVersion', Word(10))
+  .field('header', U32(0x02014b50))
+  .field('madeByVersion', U16(10))
   .field('sharedHeaderInfo', sharedHeaderInfo)
-  .field('fileCommentSize', Word(0))
-  .field('diskNumber', Word(0))
-  .field('internalFileAttributes', Word(0))
-  .field('externalFileAttributes', DoubleWord(0))
-  .field('relativeOffset', DoubleWord(0))
+  .field('fileCommentSize', U16(0))
+  .field('diskNumber', U16(0))
+  .field('internalFileAttributes', U16(0))
+  .field('externalFileAttributes', U32(0))
+  .field('relativeOffset', U32(0))
   .field('filename', filename);
 
 const endOfCentralDirectory = Struct('endOfCentralDirectory')
-  .field('header', DoubleWord(0x06054b50))
-  .field('diskNumber', Word(0))
-  .field('centralDirDiskStart', Word(0))
-  .field('numberOfCentralDirsOnDisk', Word(1))
-  .field('totalNumberOfCentralDirs', Word(1))
-  .field('centralDirSize', DoubleWord(0))
-  .field('offsetToStart', DoubleWord(0))
-  .field('commentLength', Word(0));
+  .field('header', U32(0x06054b50))
+  .field('diskNumber', U16(0))
+  .field('centralDirDiskStart', U16(0))
+  .field('numberOfCentralDirsOnDisk', U16(1))
+  .field('totalNumberOfCentralDirs', U16(1))
+  .field('centralDirSize', U32(0))
+  .field('offsetToStart', U32(0))
+  .field('commentLength', U16(0));
 
 
 const zipFile = Struct('ZipFile')
