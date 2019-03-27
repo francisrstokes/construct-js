@@ -337,97 +337,91 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 **These fields are the same as those above, but using outdated and ambiguous terminology.**
 
-All fields contain some common properties and methods. These are:
+#### Byte
 
-`.set(value | values)`
-
-Which sets either the value or values of the field.
-
-`.setIsLittleEndian(trueOrFalse)`
-
-Manually sets this field to little or big endian.
-
-The rest of the properties should be considered private and not modified directly.
-
-#### U8
-
-`U8(value)`
+`Byte(value)`
 
 A single 8-bit unsigned value.
 
-#### U16
+#### Word
 
-`U16(value)`
+`Word(value)`
 
 A single 16-bit unsigned value.
 
-#### U32
+#### DoubleWord
 
-`U32(value)`
+`DoubleWord(value)`
 
 A single 32-bit unsigned value.
 
-#### I8
+#### SignedByte
 
-`I8(value)`
+`SignedByte(value)`
 
 A single 8-bit signed value.
 
-#### I16
+#### SignedWord
 
-`I16(value)`
+`SignedWord(value)`
 
 A single 16-bit signed value.
 
-#### I32
+#### SignedDoubleWord
 
-`I32(value)`
+`SignedDoubleWord(value)`
 
 A single 32-bit signed value.
 
-#### U8s
+#### RawString
 
-`U8s(array | number)`
+`RawString(string)`
+
+A collection of 8-bit unsigned values, interpreted directly from the string provided. The size of the field is the **byte length** of the string (which is not always the `string.length` when considering unicode).
+
+#### Bytes
+
+`Bytes(array | number)`
 
 A collection of 8-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
 
-#### U16s
+#### Words
 
-`U16s(array | number)`
+`Words(array | number)`
 
 A collection of 16-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
-#### U32s
+#### DoubleWords
 
-`U32s(array | number)`
+`DoubleWords(array | number)`
 
 A collection of 32-bit unsigned values.
 
 If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
 
-#### I8s
+#### SignedBytes
 
-`I8s(array | number)`
+`SignedBytes(array | number)`
 
 A collection of 8-bit signed values.
 
 If the argument provided is an array, then the size of the field is `array.length` bytes, with each value corresponding to an 8-bit interpretation of that value.
 
-#### I16s
+#### SignedWords
 
-`I16s(array | number)`
+`SignedWords(array | number)`
 
 A collection of 16-bit signed values.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
-#### I32s
+#### SignedDoubleWords
 
-`I32s(array | number)`
+`SignedDoubleWords(array | number)`
 
 A collection of 32-bit signed values.
 
