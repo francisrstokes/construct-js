@@ -17,13 +17,17 @@ npm i construct-js
     - [2.1.5 getDeep](#getDeep)
     - [2.1.6 getDeepOffset](#getDeepOffset)
     - [2.1.7 computeBufferSize](#computeBufferSize)
-    - [2.1.8 toBuffer](#toBuffer)
+    - [2.1.8 toArrayBuffer](#toArrayBuffer)
+    - [2.1.9 toBuffer](#toBuffer)
+    - [2.1.10 toBytes](#toBytes)
   - [2.2 BitStruct](#bitstruct)
     - [2.2.1 flag](#flag)
     - [2.2.2 multiBit](#multiBit)
     - [2.2.3 getOffset](#getOffset-1)
     - [2.2.4 computeBufferSize](#computeBufferSize-1)
     - [2.2.5 toBuffer](#toBuffer-1)
+    - [2.2.6 toArrayBuffer](#toArrayBuffer-1)
+    - [2.2.7 toArray](#toArray-1)
   - [2.3 Fields](#fields)
     - [2.3.1 U8](#U8)
     - [2.3.2 U16](#U16)
@@ -184,11 +188,23 @@ Returns the byte offset within multiple structs, where *path* is a `.` separated
 
 Returns the size of the struct in bytes.
 
+#### toArrayBuffer
+
+`.toArrayBuffer()`
+
+Returns an `ArrayBuffer` representation of the Struct. You should use this if working in the browser.
+
 #### toBuffer
 
 `.toBuffer()`
 
 Returns a `Buffer` representation of the Struct.
+
+#### toBytes
+
+`.toBytes()`
+
+Returns a regular `Array` representation of the Struct.
 
 ### BitStruct
 
@@ -227,6 +243,18 @@ Returns the size of the BitStruct in **bytes**.
 `.toBuffer()`
 
 Returns a byte-aligned `Buffer` representing the BitStruct.
+
+#### toArrayBuffer
+
+`.toArrayBuffer()`
+
+Returns a byte-aligned `ArrayBuffer` representing the BitStruct.
+
+#### toArray
+
+`.toArray()`
+
+Returns a byte-aligned `Array` representing the BitStruct.
 
 ### Fields
 

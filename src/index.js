@@ -17,9 +17,9 @@ class DataValue {
       size = 1;
     }
 
-    this.arrayBuffer = new ArrayBuffer(size * this.byteWidth);
+    this.byteLength = size * this.byteWidth;
+    this.arrayBuffer = new ArrayBuffer(this.byteLength);
     this.dataView = new DataView(this.arrayBuffer);
-    this.buffer = Buffer.from(this.arrayBuffer);
     this.littleEndian = littleEndian;
 
     if (isSingleValue) {
@@ -40,8 +40,7 @@ class DataValue {
     });
 
     this.size = this.raw.length;
-    this.buffer = Buffer.from(this.arrayBuffer);
-    this.byteLength = this.buffer.byteLength;
+    this.byteLength = this.size * this.byteWidth;
     return this;
   }
 
@@ -51,6 +50,28 @@ class DataValue {
       this.set(this.raw);
     }
     return this;
+  }
+
+  toBuffer() {
+    return Buffer.from(this.arrayBuffer);
+  }
+
+  toBytes() {
+    const bytes = Array.from({length: this.byteLength});
+
+    for (let i = 0; i < this.byteLength; i++) {
+      bytes[i] = this.dataView.getUint8(i, this.littleEndian);
+    }
+
+    return bytes;
+  }
+
+  writeBytes(array, offset) {
+    for (let i = offset; i < offset + this.byteLength; i++) {
+      array[i] = this.dataView.getUint8(i - offset, this.littleEndian);
+    }
+
+    return offset + this.byteLength;
   }
 }
 
@@ -189,7 +210,7 @@ class Struct {
       if (field instanceof Struct) {
         size += field.computeBufferSize();
       } else {
-        size += field.buffer.byteLength;
+        size += field.byteLength;
       }
     }
     return size;
@@ -220,7 +241,7 @@ class Struct {
       if (field instanceof Struct) {
         return acc + field.computeBufferSize();
       }
-      return acc + field.buffer.byteLength;
+      return acc + field.byteLength;
     }, 0);
   }
 
@@ -231,6 +252,37 @@ class Struct {
       }
       return [...acc, field.buffer];
     }, []));
+  }
+
+  toBytes() {
+    const bytes = Array.from({length: this.computeBufferSize()});
+    let offset = 0;
+
+    this.fields.forEach(([_, field]) => {
+      offset = field.writeBytes(bytes, offset);
+    });
+
+    return bytes;
+  }
+
+  writeBytes(bytes, offset) {
+    let newOffset = offset;
+
+    this.fields.forEach(([_, field]) => {
+      newOffset = field.writeBytes(bytes, newOffset);
+    });
+
+    return newOffset;
+  }
+
+  toArrayBuffer() {
+    const bytes = this.toBytes();
+    const ab = new ArrayBuffer(bytes.length);
+    const view = new DataView(ab);
+    for (let i = 0; i < bytes.length; i++) {
+      view.setUint8(i, bytes[i]);
+    }
+    return ab;
   }
 }
 
@@ -307,6 +359,25 @@ class BitStruct extends Struct {
     }, Array.from({length: this.computeBufferSize()}).fill(0));
 
     return Buffer.from(bytes);
+  }
+
+  toBytes() {
+    return bits.reduce((bytes, bit, i) => {
+      const byteIndex = Math.floor(i/8);
+      const bitIndex = i % 8;
+      bytes[byteIndex] += bit << bitIndex;
+      return bytes;
+    }, Array.from({length: this.computeBufferSize()}).fill(0));
+  }
+
+  writeBytes(array, offset) {
+    const bytes = this.toBytes();
+
+    for (let i = offset; i < offset + bytes.length; i++) {
+      array[i] = bytes[i - offset];
+    }
+
+    return offset + bytes.length;
   }
 }
 
