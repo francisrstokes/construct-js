@@ -57,21 +57,18 @@ class DataValue {
   }
 
   toBytes() {
-    const view = new DataView(this.arrayBuffer);
     const bytes = Array.from({length: this.byteLength});
 
     for (let i = 0; i < this.byteLength; i++) {
-      bytes[i] = view.getUint8(i, this.littleEndian);
+      bytes[i] = this.dataView.getUint8(i, this.littleEndian);
     }
 
     return bytes;
   }
 
   writeBytes(array, offset) {
-    const view = new DataView(this.arrayBuffer);
-
     for (let i = offset; i < offset + this.byteLength; i++) {
-      array[i] = view.getUint8(i - offset, this.littleEndian);
+      array[i] = this.dataView.getUint8(i - offset, this.littleEndian);
     }
 
     return offset + this.byteLength;
