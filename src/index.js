@@ -250,7 +250,7 @@ class Struct {
       if (field instanceof Struct) {
         return [...acc, field.toBuffer()];
       }
-      return [...acc, field.buffer];
+      return [...acc, field.toBuffer()];
     }, []));
   }
 
