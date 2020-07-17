@@ -336,13 +336,13 @@ class BitStruct extends Struct {
     let size = 0;
     for (let i = 0; i < ind; i++) {
       const field = this.fields[i][1];
-        size += field.size;
+        size += field._size;
     }
     return size;
   }
 
   computeBufferSize() {
-    const bits = this.fields.reduce((acc, [_, {size}]) => acc + size, 0);
+    const bits = this.fields.reduce((acc, [_, {_size}]) => acc + _size, 0);
     return Math.ceil(bits / 8);
   }
 
