@@ -299,7 +299,8 @@ class Bits {
 
   getBits() {
     return Array.from({length: this._size}, (_, i) => {
-      return (this._value & 2**i) >> i
+      const shift = this._size - (i+1)
+      return (this._value >> shift) & 0x01
     });
   }
 
@@ -347,25 +348,18 @@ class BitStruct extends Struct {
   }
 
   toBuffer() {
+    return Buffer.from(this.toBytes());
+  }
+
+  toBytes() {
     const bits = this.fields.reduce((bits, [_, field]) => {
       return [...bits, ...field.getBits()];
     }, []);
 
-    const bytes = bits.reduce((bytes, bit, i) => {
-      const byteIndex = Math.floor(i/8);
-      const bitIndex = i % 8;
-      bytes[byteIndex] += bit << bitIndex;
-      return bytes;
-    }, Array.from({length: this.computeBufferSize()}).fill(0));
-
-    return Buffer.from(bytes);
-  }
-
-  toBytes() {
     return bits.reduce((bytes, bit, i) => {
       const byteIndex = Math.floor(i/8);
       const bitIndex = i % 8;
-      bytes[byteIndex] += bit << bitIndex;
+      bytes[byteIndex] += bit << (7 - bitIndex);
       return bytes;
     }, Array.from({length: this.computeBufferSize()}).fill(0));
   }
