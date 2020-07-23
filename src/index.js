@@ -314,6 +314,12 @@ class Bits {
 }
 
 class BitStruct extends Struct {
+
+  constructor(name, lsbFirst = true) {
+    super(name);
+    this._lsbFirst = lsbFirst;
+  }
+
   multiBit(name, size, value) {
     this.fields.push([name, new Bits(size, value)]);
     return this;
@@ -353,13 +359,17 @@ class BitStruct extends Struct {
 
   toBytes() {
     const bits = this.fields.reduce((bits, [_, field]) => {
-      return [...bits, ...field.getBits()];
+      const fieldBits = field.getBits();
+      if (this._lsbFirst) fieldBits.reverse();
+
+      return [...bits, ...fieldBits];
     }, []);
 
     return bits.reduce((bytes, bit, i) => {
       const byteIndex = Math.floor(i/8);
       const bitIndex = i % 8;
-      bytes[byteIndex] += bit << (7 - bitIndex);
+      const shift = this._lsbFirst ? bitIndex : 7 - bitIndex;
+      bytes[byteIndex] += bit << shift;
       return bytes;
     }, Array.from({length: this.computeBufferSize()}).fill(0));
   }
@@ -407,5 +417,5 @@ module.exports = {
   SignedDoubleWord: (value, littleEndian = true) => new SignedDoubleWord(value, littleEndian),
 
   Struct: (name, littleEndian = true) => new Struct(name, littleEndian),
-  BitStruct: (name) => new BitStruct(name),
+  BitStruct: (name, lsbFirst = true) => new BitStruct(name, lsbFirst),
 };

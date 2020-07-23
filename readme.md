@@ -208,11 +208,11 @@ Returns a regular `Array` representation of the Struct.
 
 ### BitStruct
 
-`BitStruct(name)`
+`BitStruct(name, lsbFirst = true)`
 
-Creates a BitStruct object, for storing and addressing data on the sub-byte level.
+Creates a BitStruct object, for storing and addressing data on the sub-byte level. If *lsbFirst* is `true`, the resulting buffer will consider the fields to be ordered from the 0th bit i.e. the first field in the BitStruct will be the least significant bit in the Buffer. If *lsbFirst* is `false`, the Buffer will contain the fields in the order they are specified.
 
-**Note**: When [bitStruct.toBuffer()](#tobuffer-1) is used, the resulting buffer will be byte aligned. This means if the size of the BitStruct is 12-bits, the resulting buffer will be 16-bits (2 bytes).
+**Note**: When [bitStruct.toBuffer()](#tobuffer-1) is used, the resulting buffer will be byte aligned. This means if the size of the BitStruct is 12-bits, the resulting buffer will be 16-bits (2 bytes). When *lsbFirst* is true, the most significant bits will be padded.
 
 #### flag
 
