@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "mocha index.test.js",
-    "test:coverage": "nyc --reporter=text --reporter=lcov mocha index.test.js"
+    "test:coverage": "nyc --reporter=text --reporter=lcov --reporter=clover mocha index.test.js"
   },
   "author": "Francis Stokes",
   "license": "MIT",
