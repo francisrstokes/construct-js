@@ -3,3 +3,5 @@ node_modules/
 /index.js
 coverage/
 .vscode
+coverage/
+.nyc_output/
