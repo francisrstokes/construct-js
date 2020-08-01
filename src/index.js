@@ -75,43 +75,43 @@ class DataValue {
   }
 }
 
-class Bytes extends DataValue {
+class U8s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(1, 'Uint8', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class Words extends DataValue {
+class U16s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(2, 'Uint16', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class DoubleWords extends DataValue {
+class U32s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(4, 'Uint32', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class SignedBytes extends DataValue {
+class S8s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(1, 'Int8', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class SignedWords extends DataValue {
+class S16s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(2, 'Int16', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class SignedDoubleWords extends DataValue {
+class S32s extends DataValue {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(4, 'Int32', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class Byte extends DataValue {
+class U8 extends DataValue {
   constructor(value, littleEndian = true) {
     super(1, 'Uint8', true, value, littleEndian);
   }
@@ -120,7 +120,7 @@ class Byte extends DataValue {
   }
 }
 
-class Word extends DataValue {
+class U16 extends DataValue {
   constructor(value, littleEndian = true) {
     super(2, 'Uint16', true, value, littleEndian);
   }
@@ -129,7 +129,7 @@ class Word extends DataValue {
   }
 }
 
-class DoubleWord extends DataValue {
+class U32 extends DataValue {
   constructor(value, littleEndian = true) {
     super(4, 'Uint32', true, value, littleEndian);
   }
@@ -138,7 +138,7 @@ class DoubleWord extends DataValue {
   }
 }
 
-class SignedByte extends DataValue {
+class S8 extends DataValue {
   constructor(value, littleEndian = true) {
     super(1, 'Int8', true, value, littleEndian);
   }
@@ -147,7 +147,7 @@ class SignedByte extends DataValue {
   }
 }
 
-class SignedWord extends DataValue {
+class S16 extends DataValue {
   constructor(value, littleEndian = true) {
     super(2, 'Int16', true, value, littleEndian);
   }
@@ -156,7 +156,7 @@ class SignedWord extends DataValue {
   }
 }
 
-class SignedDoubleWord extends DataValue {
+class S32 extends DataValue {
   constructor(value, littleEndian = true) {
     super(4, 'Int32', true, value, littleEndian);
   }
@@ -166,10 +166,8 @@ class SignedDoubleWord extends DataValue {
 }
 
 class Struct {
-  constructor(name, littleEndian = true) {
+  constructor(name) {
     this.name = name;
-    this.littleEndian = littleEndian;
-    this.forceEndianess = true;
     this.fields = [];
   }
 
@@ -178,14 +176,6 @@ class Struct {
       throw new Error(`Field name ${name} already exists in structure ${this.name}`);
     }
     this.fields.push([name, value]);
-
-    if (this.forceEndianess) {
-      if (value instanceof Struct) {
-          value.forceEndianess = true;
-      } else if (value instanceof DataValue) {
-          value.setIsLittleEndian(this.littleEndian);
-      }
-    }
 
     return this;
   }
@@ -386,36 +376,22 @@ class BitStruct extends Struct {
 }
 
 module.exports = {
-  RawString: (str, littleEndian = true) => new Bytes(str.split('').map(c => c.charCodeAt(0)), littleEndian),
+  RawString: (str, littleEndian = true) => new U8s(str.split('').map(c => c.charCodeAt(0)), littleEndian),
 
-  U8s: (sizeOrDataArray, littleEndian = true) => new Bytes(sizeOrDataArray, littleEndian),
-  U16s: (sizeOrDataArray, littleEndian = true) => new Words(sizeOrDataArray, littleEndian),
-  U32s: (sizeOrDataArray, littleEndian = true) => new DoubleWords(sizeOrDataArray, littleEndian),
-  I8s: (sizeOrDataArray, littleEndian = true) => new SignedBytes(sizeOrDataArray, littleEndian),
-  I16s: (sizeOrDataArray, littleEndian = true) => new SignedWords(sizeOrDataArray, littleEndian),
-  I32s: (sizeOrDataArray, littleEndian = true) => new SignedDoubleWords(sizeOrDataArray, littleEndian),
+  U8s: (sizeOrDataArray, littleEndian = true) => new U8s(sizeOrDataArray, littleEndian),
+  U16s: (sizeOrDataArray, littleEndian = true) => new U16s(sizeOrDataArray, littleEndian),
+  U32s: (sizeOrDataArray, littleEndian = true) => new U32s(sizeOrDataArray, littleEndian),
+  S8s: (sizeOrDataArray, littleEndian = true) => new S8s(sizeOrDataArray, littleEndian),
+  S16s: (sizeOrDataArray, littleEndian = true) => new S16s(sizeOrDataArray, littleEndian),
+  S32s: (sizeOrDataArray, littleEndian = true) => new S32s(sizeOrDataArray, littleEndian),
 
-  Bytes: (sizeOrDataArray, littleEndian = true) => new Bytes(sizeOrDataArray, littleEndian),
-  Words: (sizeOrDataArray, littleEndian = true) => new Words(sizeOrDataArray, littleEndian),
-  DoubleWords: (sizeOrDataArray, littleEndian = true) => new DoubleWords(sizeOrDataArray, littleEndian),
-  SignedBytes: (sizeOrDataArray, littleEndian = true) => new SignedBytes(sizeOrDataArray, littleEndian),
-  SignedWords: (sizeOrDataArray, littleEndian = true) => new SignedWords(sizeOrDataArray, littleEndian),
-  SignedDoubleWords: (sizeOrDataArray, littleEndian = true) => new SignedDoubleWords(sizeOrDataArray, littleEndian),
+  U8: (value, littleEndian = true) => new U8(value, littleEndian),
+  U16: (value, littleEndian = true) => new U16(value, littleEndian),
+  U32: (value, littleEndian = true) => new U32(value, littleEndian),
+  S8: (value, littleEndian = true) => new S8(value, littleEndian),
+  S16: (value, littleEndian = true) => new S16(value, littleEndian),
+  S32: (value, littleEndian = true) => new S32(value, littleEndian),
 
-  U8: (value, littleEndian = true) => new Byte(value, littleEndian),
-  U16: (value, littleEndian = true) => new Word(value, littleEndian),
-  U32: (value, littleEndian = true) => new DoubleWord(value, littleEndian),
-  I8: (value, littleEndian = true) => new SignedByte(value, littleEndian),
-  I16: (value, littleEndian = true) => new SignedWord(value, littleEndian),
-  I32: (value, littleEndian = true) => new SignedDoubleWord(value, littleEndian),
-
-  Byte: (value, littleEndian = true) => new Byte(value, littleEndian),
-  Word: (value, littleEndian = true) => new Word(value, littleEndian),
-  DoubleWord: (value, littleEndian = true) => new DoubleWord(value, littleEndian),
-  SignedByte: (value, littleEndian = true) => new SignedByte(value, littleEndian),
-  SignedWord: (value, littleEndian = true) => new SignedWord(value, littleEndian),
-  SignedDoubleWord: (value, littleEndian = true) => new SignedDoubleWord(value, littleEndian),
-
-  Struct: (name, littleEndian = true) => new Struct(name, littleEndian),
+  Struct: (name) => new Struct(name),
   BitStruct: (name, lsbFirst = true) => new BitStruct(name, lsbFirst),
 };
