@@ -1,11 +1,17 @@
 {
   "name": "construct-js",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha index.test.js",
+    "test:coverage": "nyc --reporter=text --reporter=lcov --reporter=clover mocha index.test.js"
   },
   "author": "Francis Stokes",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.1.0",
+    "nyc": "^15.1.0"
+  }
 }
