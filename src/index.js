@@ -165,6 +165,54 @@ class S32 extends DataValue {
   }
 }
 
+class PointerBase extends DataValue {
+  constructor(byteLength, dataViewFn, struct, path, littleEndian = true) {
+    super(byteLength, dataViewFn, true, 0, littleEndian);
+    this.isReferential = true;
+    this.set(struct, path);
+  }
+  set(struct, path) {
+    if (!this.isReferential) return;
+
+    if (!(struct && struct.constructor === Struct)) {
+      throw new Error('argument struct must be a Struct type');
+    }
+    this.struct = struct;
+    this.path = path;
+  }
+  toBytes() {
+    const value = this.struct.getDeepOffset(this.path);
+    super.set([value]);
+    return super.toBytes();
+  }
+  writeBytes(bytes, offset) {
+    const theseBytes = this.toBytes();
+    theseBytes.forEach((value, index) => {
+      bytes[offset + index] = value;
+    });
+
+    return offset + theseBytes.length;
+  }
+}
+
+class Pointer8 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(1, 'Uint8', struct, path, littleEndian);
+  }
+}
+
+class Pointer16 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(2, 'Uint16', struct, path, littleEndian);
+  }
+}
+
+class Pointer32 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(4, 'Uint32', struct, path, littleEndian);
+  }
+}
+
 class Struct {
   constructor(name) {
     this.name = name;
