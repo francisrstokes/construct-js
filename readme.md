@@ -41,6 +41,12 @@ npm i construct-js
     - [3.3.11 S8s](#S8s)
     - [3.3.12 S16s](#S16s)
     - [3.3.13 S32s](#S32s)
+    - [3.3.14 Pointer8](#Pointer8)
+    - [3.3.15 Pointer16](#Pointer16)
+    - [3.3.16 Pointer32](#Pointer32)
+    - [3.3.17 SizeOf8](#SizeOf8)
+    - [3.3.18 SizeOf16](#SizeOf16)
+    - [3.3.19 SizeOf32](#SizeOf32)
 
 ## Example
 
@@ -53,6 +59,7 @@ const {
   U16,
   U32,
   Struct,
+  Pointer32
 } = require('construct-js');
 
 const data = RawString('helloworldhelloworldhelloworldhelloworldhelloworldhelloworldhelloworldhelloworld');
@@ -93,9 +100,8 @@ const endOfCentralDirectory = Struct('endOfCentralDirectory')
   .field('numberOfCentralDirsOnDisk', U16(1))
   .field('totalNumberOfCentralDirs', U16(1))
   .field('centralDirSize', U32(0))
-  .field('offsetToStart', U32(0))
+  .field('offsetToStart', Pointer32(zipFile, 'centralDirectory'))
   .field('commentLength', U16(0));
-
 
 const zipFile = Struct('ZipFile')
   .field('localHeader', localHeader)
@@ -103,12 +109,9 @@ const zipFile = Struct('ZipFile')
   .field('centralDirectory', centralDirectory)
   .field('endOfCentralDirectory', endOfCentralDirectory);
 
-const offset = zipFile.getOffset('centralDirectory');
-endOfCentralDirectory.get('offsetToStart').set(offset);
-
 const fileBuffer = zipFile.toBuffer();
 
-fs.writeFile('./test.zip', fileBuffer, () => {});
+fs.writeFileSync('./test.zip', fileBuffer);
 ```
 
 ## Changelog
@@ -268,13 +271,13 @@ A single 8-bit unsigned value.
 
 #### U16
 
-`U16(value)`
+`U16(value, littleEndian = true)`
 
 A single 16-bit unsigned value.
 
 #### U32
 
-`U32(value)`
+`U32(value, littleEndian = true)`
 
 A single 32-bit unsigned value.
 
@@ -286,13 +289,13 @@ A single 8-bit signed value.
 
 #### S16
 
-`S16(value)`
+`S16(value, littleEndian = true)`
 
 A single 16-bit signed value.
 
 #### S32
 
-`S32(value)`
+`S32(value, littleEndian = true)`
 
 A single 32-bit signed value.
 
@@ -312,7 +315,7 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### U16s
 
-`U16s(array | number)`
+`U16s(array | number, littleEndian = true)`
 
 A collection of 16-bit unsigned values.
 
@@ -320,7 +323,7 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### U32s
 
-`U32s(array | number)`
+`U32s(array | number, littleEndian = true)`
 
 A collection of 32-bit unsigned values.
 
@@ -336,7 +339,7 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### S16s
 
-`S16s(array | number)`
+`S16s(array | number, littleEndian = true)`
 
 A collection of 16-bit signed values.
 
@@ -344,9 +347,44 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### S32s
 
-`S32s(array | number)`
+`S32s(array | number, littleEndian = true)`
 
 A collection of 32-bit signed values.
 
 If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
 
+#### Pointer8
+
+`Pointer8(struct, path)`
+
+`Pointer8` takes a [Struct](#Struct) and a path, and represents an 8-bit pointer (offset) to the field specified by the path in the provided struct.
+
+#### Pointer16
+
+`Pointer16(struct, path, littleEndian = true)`
+
+`Pointer16` takes a [Struct](#Struct), a path, and an endianness flag, and represents a 16-bit pointer (offset) to the field specified by the path in the provided struct.
+
+#### Pointer32
+
+`Pointer32(struct, path, littleEndian = true)`
+
+`Pointer32` takes a [Struct](#Struct), a path, and an endianness flag, and represents a 32-bit pointer (offset) to the field specified by the path in the provided struct.
+
+#### SizeOf8
+
+`SizeOf8(structOrField)`
+
+`SizeOf8` takes a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as an 8-bit unsigned integer.
+
+#### SizeOf16
+
+`SizeOf16(structOrField, littleEndian = true)`
+
+`SizeOf16` takes a [Struct](#Struct) or a [Field](#Field), and an endianness flag, and represents the size of the Struct or the Field as a 16-bit unsigned integer.
+
+#### SizeOf32
+
+`SizeOf32(structOrField, littleEndian = true)`
+
+`SizeOf32` takes a [Struct](#Struct) or a [Field](#Field), and an endianness flag, and represents the size of the Struct or the Field as a 32-bit unsigned integer.
