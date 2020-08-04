@@ -165,6 +165,105 @@ class S32 extends DataValue {
   }
 }
 
+class PointerBase extends DataValue {
+  constructor(byteLength, dataViewFn, struct, path, littleEndian = true) {
+    super(byteLength, dataViewFn, true, 0, littleEndian);
+    this.isReferential = true;
+    this.set(struct, path);
+  }
+  set(struct, path) {
+    if (!this.isReferential) return;
+
+    if (!(struct && struct.constructor === Struct)) {
+      throw new Error('argument struct must be a Struct type');
+    }
+    this.struct = struct;
+    this.path = path;
+  }
+  toBytes() {
+    const value = this.struct.getDeepOffset(this.path);
+    super.set([value]);
+    return super.toBytes();
+  }
+  writeBytes(bytes, offset) {
+    const theseBytes = this.toBytes();
+    theseBytes.forEach((value, index) => {
+      bytes[offset + index] = value;
+    });
+
+    return offset + theseBytes.length;
+  }
+}
+
+class SizeOfBase extends DataValue {
+  constructor(byteLength, dataViewFn, structOrField, littleEndian = true) {
+    super(byteLength, dataViewFn, true, 0, littleEndian);
+    this.isReferential = true;
+    this.set(structOrField);
+  }
+  set(structOrField) {
+    if (!this.isReferential) return;
+
+    const isStruct = structOrField instanceof Struct;
+    const isField = structOrField instanceof DataValue;
+
+    if (!isStruct && !isField) {
+      throw new Error('argument must be a Struct or a Field');
+    }
+
+    this.structOrField = structOrField
+  }
+  toBytes() {
+    const value = this.structOrField.computeBufferSize();
+    super.set([value]);
+    return super.toBytes();
+  }
+  writeBytes(bytes, offset) {
+    const theseBytes = this.toBytes();
+    theseBytes.forEach((value, index) => {
+      bytes[offset + index] = value;
+    });
+
+    return offset + theseBytes.length;
+  }
+}
+
+class SizeOf8 extends SizeOfBase {
+  constructor(structOrField, littleEndian = true) {
+    super(1, 'Uint8', structOrField, littleEndian);
+  }
+}
+
+class SizeOf16 extends SizeOfBase {
+  constructor(structOrField, littleEndian = true) {
+    super(2, 'Uint16', structOrField, littleEndian);
+  }
+}
+
+class SizeOf32 extends SizeOfBase {
+  constructor(structOrField, littleEndian = true) {
+    super(4, 'Uint32', structOrField, littleEndian);
+  }
+}
+
+class Pointer8 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(1, 'Uint8', struct, path, littleEndian);
+  }
+}
+
+class Pointer16 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(2, 'Uint16', struct, path, littleEndian);
+  }
+}
+
+class Pointer32 extends PointerBase {
+  constructor(struct, path, littleEndian = true) {
+    super(4, 'Uint32', struct, path, littleEndian);
+  }
+}
+
 class Struct {
   constructor(name) {
     this.name = name;
@@ -236,12 +335,7 @@ class Struct {
   }
 
   toBuffer() {
-    return Buffer.concat(this.fields.reduce((acc, [_, field]) => {
-      if (field instanceof Struct) {
-        return [...acc, field.toBuffer()];
-      }
-      return [...acc, field.toBuffer()];
-    }, []));
+    return Buffer.from(this.toBytes());
   }
 
   toBytes() {
@@ -391,6 +485,14 @@ module.exports = {
   S8: (value, littleEndian = true) => new S8(value, littleEndian),
   S16: (value, littleEndian = true) => new S16(value, littleEndian),
   S32: (value, littleEndian = true) => new S32(value, littleEndian),
+
+  Pointer8: (struct, path, littleEndian = true) => new Pointer8(struct, path, littleEndian),
+  Pointer16: (struct, path, littleEndian = true) => new Pointer16(struct, path, littleEndian),
+  Pointer32: (struct, path, littleEndian = true) => new Pointer32(struct, path, littleEndian),
+
+  SizeOf8: (struct, littleEndian = true) => new SizeOf8(struct, littleEndian),
+  SizeOf16: (struct, littleEndian = true) => new SizeOf16(struct, littleEndian),
+  SizeOf32: (struct, littleEndian = true) => new SizeOf32(struct, littleEndian),
 
   Struct: (name) => new Struct(name),
   BitStruct: (name, lsbFirst = true) => new BitStruct(name, lsbFirst),

@@ -5,6 +5,8 @@ const {
   S8, S16, S32,
   U8s, U16s, U32s,
   S8s, S16s, S32s,
+  Pointer8, Pointer16, Pointer32,
+  SizeOf8, SizeOf16, SizeOf32,
   RawString,
   BitStruct
 } = require('./src');
@@ -145,7 +147,158 @@ describe('basic', () => {
   });
 });
 
-describe('pointers and sizes', () => {
+describe('pointers', () => {
+  const s1 = Struct('test');
+  s1
+    .field('b1', U8(0x01))
+    .field('b2', U8(0x02))
+    .field('pointer', Pointer8(s1, 'b2'))
+    .field('b3', U8(0x03))
+    .field('b4', U8(0x04));
+  compareExpectedBytesTest('Pointer8', s1, [1, 2, 1, 3, 4]);
+
+  const s2 = Struct('test');
+  s2
+    .field('b1', U8(0x01))
+    .field('b2', U16(0x0203, false))
+    .field('b3', U8(0x04))
+    .field('pointer', Pointer16(s2, 'b3', true))
+    .field('b4', U8(0x05));
+  compareExpectedBytesTest('Pointer16 little endian', s2, [1, 2, 3, 4, 3, 0, 5]);
+
+  const s3 = Struct('test');
+  s3
+    .field('b1', U8(0x01))
+    .field('b2', U16(0x0203, false))
+    .field('b3', U8(0x04))
+    .field('pointer', Pointer16(s3, 'b3', false))
+    .field('b4', U8(0x05));
+  compareExpectedBytesTest('Pointer16 big endian', s3, [1, 2, 3, 4, 0, 3, 5]);
+
+  const s4 = Struct('test');
+  s4
+    .field('b1', U8(0x01))
+    .field('b2', U16(0x0203, false))
+    .field('b3', U8(0x04))
+    .field('pointer', Pointer32(s4, 'b3', true))
+    .field('b4', U8(0x05));
+  compareExpectedBytesTest('Pointer32 little endian', s4, [1, 2, 3, 4, 3, 0, 0, 0, 5]);
+
+  const s5 = Struct('test');
+  s5
+    .field('b1', U8(0x01))
+    .field('b2', U16(0x0203, false))
+    .field('b3', U8(0x04))
+    .field('pointer', Pointer32(s5, 'b3', false))
+    .field('b4', U8(0x05));
+  compareExpectedBytesTest('Pointer32 big endian', s5, [1, 2, 3, 4, 0, 0, 0, 3, 5]);
+
+  expectedFailureTest('Pointers fail when made concrete',
+    () => {
+      const s = Struct('whatevs');
+      s.field('pointer', Pointer8(s, 'x'));
+      s.toArrayBuffer();
+    },
+    'No field x in Struct whatevs'
+  );
+
+  expectedFailureTest('Using an invalid struct fails',
+    () => {
+      const s = Struct('whatevs');
+      s.field('pointer', Pointer8({}, 'x'));
+      s.toArrayBuffer();
+    },
+    'argument struct must be a Struct'
+  );
+
+  expectedFailureTest('Setting an invalid struct fails',
+    () => {
+      const s = Struct('whatevs');
+      s.field('pointer', Pointer8(s, 'x'));
+      s.get('pointer').set({}, 'bleh');
+      s.toArrayBuffer();
+    },
+    'argument struct must be a Struct'
+  );
+});
+
+describe('sizeOf', () => {
+  const s1 = Struct('test');
+  s1
+  .field('b1', U8(0x01))
+  .field('b2', U16(0x0203))
+  .field('b3', SizeOf8(s1))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf8',
+    s1,
+    [1, 3, 2, 8, 7, 6, 5, 4]
+  );
+
+  const s2 = Struct('test');
+  s2
+  .field('b1', U8(0x01))
+  .field('b2', U16(0x0203))
+  .field('b3', SizeOf16(s2))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf16 little endian',
+    s2,
+    [1, 3, 2, 9, 0, 7, 6, 5, 4]
+  );
+
+  const s3 = Struct('test');
+  s3
+  .field('b1', U8(0x01))
+  .field('b2', U16(0x0203))
+  .field('b3', SizeOf16(s3, false))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf16 big endian',
+    s3,
+    [1, 3, 2, 0, 9, 7, 6, 5, 4]
+  );
+
+  const s4 = Struct('test');
+  s4
+  .field('b1', U8(0x01))
+  .field('b2', U16(0x0203))
+  .field('b3', SizeOf32(s4))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf32 little endian',
+    s4,
+    [1, 3, 2, 11, 0, 0, 0, 7, 6, 5, 4]
+  );
+
+  const s5 = Struct('test');
+  s5
+  .field('b1', U8(0x01))
+  .field('b2', U16(0x0203))
+  .field('b3', SizeOf32(s5, false))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf32 big endian',
+    s5,
+    [1, 3, 2, 0, 0, 0, 11, 7, 6, 5, 4]
+  );
+
+  expectedFailureTest('SizeOf requires a struct or a field',
+    () => Struct('ohno').field('bad', SizeOf8({})),
+    'argument must be a Struct or a Field'
+  );
+
+  expectedFailureTest('Setting a SizeOf requires a struct or a field',
+    () => {
+      const s = Struct('ohno');
+      s.field('bad', SizeOf8(s));
+      s.get('bad').set({});
+    },
+    'argument must be a Struct or a Field'
+  );
+});
+
+describe('getters/setters/offsets', () => {
   it('getting a pointer to a field in a struct', () => {
     const s = Struct('test')
       .field('b1', U8(0x01))
