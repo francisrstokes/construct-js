@@ -6,7 +6,7 @@
 npm i construct-js
 ```
 
-- [1. Example](#example)
+- [1. Examples](#examples)
 - [2. Changelog](#changelog)
 - [3. API](#api)
   - [3.1 Struct](#struct)
@@ -48,7 +48,7 @@ npm i construct-js
     - [3.3.18 SizeOf16](#SizeOf16)
     - [3.3.19 SizeOf32](#SizeOf32)
 
-## Example
+## Examples
 
 [There are more examples in the examples folder.](./examples/index.md)
 
@@ -66,6 +66,9 @@ const {
 
 const data = RawString('helloworldhelloworldhelloworldhelloworldhelloworldhelloworldhelloworldhelloworld');
 const filename = RawString('helloworld.txt');
+
+// Create a stub for the top level struct that can be referenced by other structs
+const zipFile = Struct('ZipFile');
 
 const sharedHeaderInfo = Struct('sharedHeaderInfo')
   .field('minVersion', U16(10))
@@ -105,7 +108,8 @@ const endOfCentralDirectory = Struct('endOfCentralDirectory')
   .field('offsetToStart', Pointer32(zipFile, 'centralDirectory'))
   .field('commentLength', U16(0));
 
-const zipFile = Struct('ZipFile')
+// Finalise the top level struct
+zipFile
   .field('localHeader', localHeader)
   .field('data', data)
   .field('centralDirectory', centralDirectory)
