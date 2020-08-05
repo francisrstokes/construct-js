@@ -283,6 +283,19 @@ describe('sizeOf', () => {
     [1, 3, 2, 0, 0, 0, 11, 7, 6, 5, 4]
   );
 
+  const s6 = Struct('test');
+  const f = U16(0x0203, true);
+  s6
+  .field('b1', U8(0x01))
+  .field('b2', f)
+  .field('b3', SizeOf32(f, false))
+  .field('b4', U32(0x04050607));
+
+  compareExpectedBytesTest('SizeOf a field is possible',
+    s6,
+    [1, 3, 2, 0, 0, 0, 2, 7, 6, 5, 4]
+  );
+
   expectedFailureTest('SizeOf requires a struct or a field',
     () => Struct('ohno').field('bad', SizeOf8({})),
     'argument must be a Struct or a Field'
