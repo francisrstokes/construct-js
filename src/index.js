@@ -73,6 +73,10 @@ class DataValue {
 
     return offset + this.byteLength;
   }
+
+  computeBufferSize() {
+    return this.byteLength;
+  }
 }
 
 class U8s extends DataValue {

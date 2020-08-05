@@ -50,6 +50,8 @@ npm i construct-js
 
 ## Example
 
+[There are more examples in the examples folder.](./examples/index.md)
+
 The following example builds a completely valid zip archive with one file inside - `helloworld.txt`.
 
 ```javascript
@@ -115,6 +117,10 @@ fs.writeFileSync('./test.zip', fileBuffer);
 ```
 
 ## Changelog
+
+### 0.4.2
+
+- Added `Pointer8`, `Pointer16`, `Pointer32`, `SizeOf8`, `SizeOf16` and `SizeOf32` fields
 
 ### 0.4.0
 
