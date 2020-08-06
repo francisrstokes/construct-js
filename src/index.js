@@ -34,13 +34,18 @@ class DataValue {
   }
 
   set(values) {
+    if (values.length !== this.size) {
+      this.size = values.length;
+      this.byteLength = this.size * this.byteWidth;
+      this.arrayBuffer = new ArrayBuffer(this.byteLength);
+      this.dataView = new DataView(this.arrayBuffer);
+    }
+
     this.raw = values;
     values.forEach((data, index) => {
       this.dataView[this._dataViewSet](index * this.byteWidth, data, this.littleEndian);
     });
 
-    this.size = this.raw.length;
-    this.byteLength = this.size * this.byteWidth;
     return this;
   }
 
