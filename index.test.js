@@ -387,6 +387,53 @@ describe('getters/setters/offsets', () => {
     compareExpectedBytes(s, [1, 2, 4, 3, 8, 7, 6, 5, 9, 10, 4, 12, 11]);
   });
 
+  it('referencing a field in a deep struct', () => {
+    const s = Struct('test')
+      .field('b1', U8(0x01))
+      .field('innerStruct',
+        Struct('inner')
+          .field('i1', U8(0x02))
+          .field('innerInner',
+            Struct('inner2')
+              .field('i2', U16(0x0304))
+              .field('i3', U32(0x05060708))
+              .field('i4', U8(0x09))
+          )
+          .field('i2', U8(0x0a))
+      )
+      .field('b2', U8(0x0b))
+      .field('size', U8(0xff))
+      .field('b4', U16(0x0c0d));
+
+    const size = s.getDeep('innerStruct.innerInner.i2').computeBufferSize();
+    s.get('size').set(size);
+
+    compareExpectedBytes(s, [1, 2, 4, 3, 8, 7, 6, 5, 9, 10, 11, 2, 13, 12]);
+  });
+
+  expectedFailureTest('Reading non-struct value in a getDeep',
+    () => {
+      const s = Struct('test')
+        .field('b1', U8(0x01))
+        .field('innerStruct',
+          Struct('inner')
+            .field('i1', U8(0x02))
+            .field('innerInner',
+              Struct('inner2')
+                .field('i2', U16(0x0304))
+                .field('i3', U32(0x05060708))
+                .field('i4', U8(0x09))
+            )
+            .field('i2', U8(0x0a))
+        )
+        .field('b2', U8(0x0b))
+        .field('size', U8(0xff))
+        .field('b4', U16(0x0c0d));
+      s.getDeep('innerStruct.innerInner.i2.i2');
+    },
+    `Can't read i2 from non-struct`
+  );
+
   it('referencing a size in a deep struct', () => {
     const s = Struct('test')
       .field('b1', U8(0x01))

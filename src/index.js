@@ -342,7 +342,7 @@ class Struct {
       if (field instanceof Struct) {
         return field.get(name);
       } else {
-        return field;
+        throw new Error(`Can't read ${name} from non-struct`);
       }
     }, this);
   }
