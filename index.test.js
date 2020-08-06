@@ -8,6 +8,7 @@ const {
   Pointer8, Pointer16, Pointer32,
   SizeOf8, SizeOf16, SizeOf32,
   RawString,
+  NullTerminatedString,
   BitStruct
 } = require('./src');
 
@@ -69,6 +70,34 @@ describe('basic', () => {
       .field('b2', RawString("hello"))
       .field('b3', U16(0x0000)),
     [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 0]
+  );
+
+  const stringStruct = Struct('test')
+  .field('b1', U8(0x01))
+  .field('b2', RawString("hello"))
+  .field('b3', U16(0x0000));
+  stringStruct.get('b2').set('different string')
+  compareExpectedBytesTest('Modifying the RawString value',
+    stringStruct,
+    [1, ...("different string".split('').map(x => x.charCodeAt(0))), 0, 0]
+  );
+
+  compareExpectedBytesTest('Struct with null terminated string',
+    Struct('test')
+      .field('b1', U8(0x01))
+      .field('b2', NullTerminatedString("hello"))
+      .field('b3', U16(0x0203)),
+    [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 3, 2]
+  );
+
+  const stringStruct2 = Struct('test')
+  .field('b1', U8(0x01))
+  .field('b2', NullTerminatedString("hello"))
+  .field('b3', U16(0x0203));
+  stringStruct2.get('b2').set('different string')
+  compareExpectedBytesTest('Modifying the RawString value',
+    stringStruct2,
+    [1, ...("different string".split('').map(x => x.charCodeAt(0))), 0, 3, 2]
   );
 
   compareExpectedBytesTest('Little endian U16',
@@ -315,6 +344,9 @@ describe('getters/setters/offsets', () => {
   it('getting a pointer to a field in a struct', () => {
     const s = Struct('test')
       .field('b1', U8(0x01))
+      .field('preStruct',
+        Struct('hello').field('s1', U8(0xff))
+      )
       .field('pointee', U16(0x0203))
       .field('b3', U32(0x04050607))
       .field('pointer', U16(0xeeee))
@@ -322,7 +354,7 @@ describe('getters/setters/offsets', () => {
     const offset = s.getOffset('pointee');
     s.get('pointer').set(offset);
 
-    compareExpectedBytes(s, [1, 3, 2, 7, 6, 5, 4, 1, 0, 9, 8]);
+    compareExpectedBytes(s, [1, 0xff, 3, 2, 7, 6, 5, 4, 2, 0, 9, 8]);
   });
 
   it('referencing a size in a struct', () => {
@@ -357,6 +389,53 @@ describe('getters/setters/offsets', () => {
 
     compareExpectedBytes(s, [1, 2, 4, 3, 8, 7, 6, 5, 9, 10, 4, 12, 11]);
   });
+
+  it('referencing a field in a deep struct', () => {
+    const s = Struct('test')
+      .field('b1', U8(0x01))
+      .field('innerStruct',
+        Struct('inner')
+          .field('i1', U8(0x02))
+          .field('innerInner',
+            Struct('inner2')
+              .field('i2', U16(0x0304))
+              .field('i3', U32(0x05060708))
+              .field('i4', U8(0x09))
+          )
+          .field('i2', U8(0x0a))
+      )
+      .field('b2', U8(0x0b))
+      .field('size', U8(0xff))
+      .field('b4', U16(0x0c0d));
+
+    const size = s.getDeep('innerStruct.innerInner.i2').computeBufferSize();
+    s.get('size').set(size);
+
+    compareExpectedBytes(s, [1, 2, 4, 3, 8, 7, 6, 5, 9, 10, 11, 2, 13, 12]);
+  });
+
+  expectedFailureTest('Reading non-struct value in a getDeep',
+    () => {
+      const s = Struct('test')
+        .field('b1', U8(0x01))
+        .field('innerStruct',
+          Struct('inner')
+            .field('i1', U8(0x02))
+            .field('innerInner',
+              Struct('inner2')
+                .field('i2', U16(0x0304))
+                .field('i3', U32(0x05060708))
+                .field('i4', U8(0x09))
+            )
+            .field('i2', U8(0x0a))
+        )
+        .field('b2', U8(0x0b))
+        .field('size', U8(0xff))
+        .field('b4', U16(0x0c0d));
+      s.getDeep('innerStruct.innerInner.i2.i2');
+    },
+    `Can't read i2 from non-struct`
+  );
 
   it('referencing a size in a deep struct', () => {
     const s = Struct('test')
