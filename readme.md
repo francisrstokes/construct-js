@@ -35,18 +35,19 @@ npm i construct-js
     - [3.3.5 S16](#S16)
     - [3.3.6 S32](#S32)
     - [3.3.7 RawString](#RawString)
-    - [3.3.8 U8s](#U8s)
-    - [3.3.9 U16s](#U16s)
-    - [3.3.10 U32s](#U32s)
-    - [3.3.11 S8s](#S8s)
-    - [3.3.12 S16s](#S16s)
-    - [3.3.13 S32s](#S32s)
-    - [3.3.14 Pointer8](#Pointer8)
-    - [3.3.15 Pointer16](#Pointer16)
-    - [3.3.16 Pointer32](#Pointer32)
-    - [3.3.17 SizeOf8](#SizeOf8)
-    - [3.3.18 SizeOf16](#SizeOf16)
-    - [3.3.19 SizeOf32](#SizeOf32)
+    - [3.3.8 NullTerminatedString](#NullTerminatedString)
+    - [3.3.9 U8s](#U8s)
+    - [3.3.10 U16s](#U16s)
+    - [3.3.11 U32s](#U32s)
+    - [3.3.12 S8s](#S8s)
+    - [3.3.13 S16s](#S16s)
+    - [3.3.14 S32s](#S32s)
+    - [3.3.15 Pointer8](#Pointer8)
+    - [3.3.16 Pointer16](#Pointer16)
+    - [3.3.17 Pointer32](#Pointer32)
+    - [3.3.18 SizeOf8](#SizeOf8)
+    - [3.3.19 SizeOf16](#SizeOf16)
+    - [3.3.20 SizeOf32](#SizeOf32)
 
 ## Examples
 
@@ -121,6 +122,11 @@ fs.writeFileSync('./test.zip', fileBuffer);
 ```
 
 ## Changelog
+
+### 0.5.0
+
+- Added `NullTerminatedString` field
+- Fixed a bug in `getDeep` that allowed requesting nonsense values in the path
 
 ### 0.4.2
 
@@ -314,6 +320,20 @@ A single 32-bit signed value.
 `RawString(string)`
 
 A collection of 8-bit unsigned values, interpreted directly from the string provided. The size of the field is the **byte length** of the string (which is not always the `string.length` when considering unicode).
+
+##### RawString.set(string)
+
+(Re)sets the value using the provided string.
+
+#### NullTerminatedString
+
+`NullTerminatedString(string)`
+
+A collection of 8-bit unsigned values, interpreted directly from the string provided. The size of the field is the **byte length** of the string (which is not always the `string.length` when considering unicode). This field appends a single `0x00` byte to the end of the data.
+
+##### NullTerminatedString.set(string)
+
+(Re)sets the value using the provided string. Automatically adds a new null termination byte.
 
 #### U8s
 
