@@ -29,10 +29,6 @@ class DataValue {
     }
   }
 
-  getOffset() {
-    return 0;
-  }
-
   set(values) {
     if (values.length !== this.size) {
       this.size = values.length;
