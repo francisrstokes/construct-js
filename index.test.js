@@ -1,15 +1,15 @@
 const {assert} = require('chai');
 const {
   Struct,
-  U8, U16, U32,
-  S8, S16, S32,
-  U8s, U16s, U32s,
-  S8s, S16s, S32s,
-  Pointer8, Pointer16, Pointer32,
-  SizeOf8, SizeOf16, SizeOf32,
+  U8, U16LE, U32LE, U16BE, U32BE,
+  S8, S16LE, S32LE, S16BE, S32BE,
+  U8s, U16LEs, U32LEs, U16BEs, U32BEs,
+  S8s, S16LEs, S32LEs, S16BEs, S32BEs,
+  Pointer8, Pointer16LE, Pointer32LE, Pointer16BE, Pointer32BE,
+  SizeOf8, SizeOf16LE, SizeOf32LE, SizeOf16BE, SizeOf32BE,
   RawString,
   NullTerminatedString,
-  BitStruct
+  BitStructLSB, BitStructMSB,
 } = require('./src');
 
 const compareExpectedBytes = (structure, expectedBytes) => {
@@ -40,20 +40,20 @@ describe('basic', () => {
   compareExpectedBytesTest('Struct with signed values',
     Struct('test')
       .field('b1', S8(-128))
-      .field('b2', S16(-10000, false))
-      .field('b3', S16(-10000, true))
-      .field('b4', S32(-10000000, false)),
+      .field('b2', S16BE(-10000))
+      .field('b3', S16LE(-10000))
+      .field('b4', S32BE(-10000000)),
     [0x80, 0xd8, 0xf0, 0xf0, 0xd8, 0xff, 0x67, 0x69, 0x80]
   );
 
   compareExpectedBytesTest('Struct with multi-value fields',
     Struct('test')
       .field('b1', U8s([0x01, 0x02, 0x03]))
-      .field('b2', U16s([0x0405, 0x0607]))
-      .field('b3', U32s([0x08090a0b, 0x0c0d0e0f], false))
+      .field('b2', U16LEs([0x0405, 0x0607]))
+      .field('b3', U32BEs([0x08090a0b, 0x0c0d0e0f]))
       .field('b4', S8s([-1, -2, -3]))
-      .field('b5', S16s([-4, -5, -6]))
-      .field('b6', S32s([-7, -8, -9], false)),
+      .field('b5', S16LEs([-4, -5, -6]))
+      .field('b6', S32BEs([-7, -8, -9])),
     [
       1, 2, 3,
       5, 4, 7,
@@ -68,14 +68,14 @@ describe('basic', () => {
     Struct('test')
       .field('b1', U8(0x01))
       .field('b2', RawString("hello"))
-      .field('b3', U16(0x0000)),
+      .field('b3', U16LE(0x0000)),
     [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 0]
   );
 
   const stringStruct = Struct('test')
   .field('b1', U8(0x01))
   .field('b2', RawString("hello"))
-  .field('b3', U16(0x0000));
+  .field('b3', U16LE(0x0000));
   stringStruct.get('b2').set('different string')
   compareExpectedBytesTest('Modifying the RawString value',
     stringStruct,
@@ -86,14 +86,14 @@ describe('basic', () => {
     Struct('test')
       .field('b1', U8(0x01))
       .field('b2', NullTerminatedString("hello"))
-      .field('b3', U16(0x0203)),
+      .field('b3', U16LE(0x0203)),
     [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 3, 2]
   );
 
   const stringStruct2 = Struct('test')
   .field('b1', U8(0x01))
   .field('b2', NullTerminatedString("hello"))
-  .field('b3', U16(0x0203));
+  .field('b3', U16LE(0x0203));
   stringStruct2.get('b2').set('different string')
   compareExpectedBytesTest('Modifying the RawString value',
     stringStruct2,
@@ -103,7 +103,7 @@ describe('basic', () => {
   compareExpectedBytesTest('Little endian U16',
     Struct('test')
       .field('b1', U8(0x01))
-      .field('b2', U16(0x0203, true))
+      .field('b2', U16LE(0x0203))
       .field('b3', U8(0x04)),
     [1, 3, 2, 4]
   );
@@ -111,7 +111,7 @@ describe('basic', () => {
   compareExpectedBytesTest('Big endian U16',
     Struct('test')
       .field('b1', U8(0x01))
-      .field('b2', U16(0x0203, false))
+      .field('b2', U16BE(0x0203))
       .field('b3', U8(0x04)),
     [1, 2, 3, 4]
   );
@@ -119,8 +119,8 @@ describe('basic', () => {
   compareExpectedBytesTest('Little endian U32',
     Struct('test')
       .field('b1', U8(0x01))
-      .field('b2', U16(0x0203, false))
-      .field('b3', U32(0x04050607, true))
+      .field('b2', U16BE(0x0203))
+      .field('b3', U32LE(0x04050607))
       .field('b4', U8(0x08)),
     [1, 2, 3, 7, 6, 5, 4, 8]
   );
@@ -128,8 +128,8 @@ describe('basic', () => {
   compareExpectedBytesTest('Big endian U32',
     Struct('test')
       .field('b1', U8(0x01))
-      .field('b2', U16(0x0203, false))
-      .field('b3', U32(0x04050607, false))
+      .field('b2', U16BE(0x0203))
+      .field('b3', U32BE(0x04050607))
       .field('b4', U8(0x08)),
     [1, 2, 3, 4, 5, 6, 7, 8]
   );
@@ -139,9 +139,9 @@ describe('basic', () => {
       .field('s1',
         Struct('s2')
           .field('s2b1', U8(0x01))
-          .field('s2b2', U16(0x0203, true))
+          .field('s2b2', U16LE(0x0203))
       )
-      .field('b1', U32(0x04050607, false)),
+      .field('b1', U32BE(0x04050607)),
     [1, 3, 2, 4, 5, 6, 7]
   );
 
@@ -167,7 +167,7 @@ describe('basic', () => {
   );
 
   it('possible to change a fields endianness', () => {
-    const f = U32(0x01020304);
+    const f = U32LE(0x01020304);
     const s = Struct('test').field('b1', f);
     compareExpectedBytes(s, [4, 3, 2, 1]);
 
@@ -189,36 +189,36 @@ describe('pointers', () => {
   const s2 = Struct('test');
   s2
     .field('b1', U8(0x01))
-    .field('b2', U16(0x0203, false))
+    .field('b2', U16BE(0x0203))
     .field('b3', U8(0x04))
-    .field('pointer', Pointer16(s2, 'b3', true))
+    .field('pointer', Pointer16LE(s2, 'b3'))
     .field('b4', U8(0x05));
   compareExpectedBytesTest('Pointer16 little endian', s2, [1, 2, 3, 4, 3, 0, 5]);
 
   const s3 = Struct('test');
   s3
     .field('b1', U8(0x01))
-    .field('b2', U16(0x0203, false))
+    .field('b2', U16BE(0x0203))
     .field('b3', U8(0x04))
-    .field('pointer', Pointer16(s3, 'b3', false))
+    .field('pointer', Pointer16BE(s3, 'b3'))
     .field('b4', U8(0x05));
   compareExpectedBytesTest('Pointer16 big endian', s3, [1, 2, 3, 4, 0, 3, 5]);
 
   const s4 = Struct('test');
   s4
     .field('b1', U8(0x01))
-    .field('b2', U16(0x0203, false))
+    .field('b2', U16BE(0x0203))
     .field('b3', U8(0x04))
-    .field('pointer', Pointer32(s4, 'b3', true))
+    .field('pointer', Pointer32LE(s4, 'b3'))
     .field('b4', U8(0x05));
   compareExpectedBytesTest('Pointer32 little endian', s4, [1, 2, 3, 4, 3, 0, 0, 0, 5]);
 
   const s5 = Struct('test');
   s5
     .field('b1', U8(0x01))
-    .field('b2', U16(0x0203, false))
+    .field('b2', U16BE(0x0203))
     .field('b3', U8(0x04))
-    .field('pointer', Pointer32(s5, 'b3', false))
+    .field('pointer', Pointer32BE(s5, 'b3'))
     .field('b4', U8(0x05));
   compareExpectedBytesTest('Pointer32 big endian', s5, [1, 2, 3, 4, 0, 0, 0, 3, 5]);
 
@@ -255,9 +255,9 @@ describe('sizeOf', () => {
   const s1 = Struct('test');
   s1
   .field('b1', U8(0x01))
-  .field('b2', U16(0x0203))
+  .field('b2', U16LE(0x0203))
   .field('b3', SizeOf8(s1))
-  .field('b4', U32(0x04050607));
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf8',
     s1,
@@ -267,9 +267,9 @@ describe('sizeOf', () => {
   const s2 = Struct('test');
   s2
   .field('b1', U8(0x01))
-  .field('b2', U16(0x0203))
-  .field('b3', SizeOf16(s2))
-  .field('b4', U32(0x04050607));
+  .field('b2', U16LE(0x0203))
+  .field('b3', SizeOf16LE(s2))
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf16 little endian',
     s2,
@@ -279,9 +279,9 @@ describe('sizeOf', () => {
   const s3 = Struct('test');
   s3
   .field('b1', U8(0x01))
-  .field('b2', U16(0x0203))
-  .field('b3', SizeOf16(s3, false))
-  .field('b4', U32(0x04050607));
+  .field('b2', U16LE(0x0203))
+  .field('b3', SizeOf16BE(s3))
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf16 big endian',
     s3,
@@ -291,9 +291,9 @@ describe('sizeOf', () => {
   const s4 = Struct('test');
   s4
   .field('b1', U8(0x01))
-  .field('b2', U16(0x0203))
-  .field('b3', SizeOf32(s4))
-  .field('b4', U32(0x04050607));
+  .field('b2', U16LE(0x0203))
+  .field('b3', SizeOf32LE(s4))
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf32 little endian',
     s4,
@@ -303,9 +303,9 @@ describe('sizeOf', () => {
   const s5 = Struct('test');
   s5
   .field('b1', U8(0x01))
-  .field('b2', U16(0x0203))
-  .field('b3', SizeOf32(s5, false))
-  .field('b4', U32(0x04050607));
+  .field('b2', U16LE(0x0203))
+  .field('b3', SizeOf32BE(s5))
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf32 big endian',
     s5,
@@ -313,12 +313,12 @@ describe('sizeOf', () => {
   );
 
   const s6 = Struct('test');
-  const f = U16(0x0203, true);
+  const f = U16LE(0x0203);
   s6
   .field('b1', U8(0x01))
   .field('b2', f)
-  .field('b3', SizeOf32(f, false))
-  .field('b4', U32(0x04050607));
+  .field('b3', SizeOf32BE(f))
+  .field('b4', U32LE(0x04050607));
 
   compareExpectedBytesTest('SizeOf a field is possible',
     s6,
@@ -347,10 +347,10 @@ describe('getters/setters/offsets', () => {
       .field('preStruct',
         Struct('hello').field('s1', U8(0xff))
       )
-      .field('pointee', U16(0x0203))
-      .field('b3', U32(0x04050607))
-      .field('pointer', U16(0xeeee))
-      .field('b4', U16(0x0809));
+      .field('pointee', U16LE(0x0203))
+      .field('b3', U32LE(0x04050607))
+      .field('pointer', U16LE(0xeeee))
+      .field('b4', U16LE(0x0809));
     const offset = s.getOffset('pointee');
     s.get('pointer').set(offset);
 
@@ -362,7 +362,7 @@ describe('getters/setters/offsets', () => {
       .field('b1', U8(0x01))
       .field('b2', U8(0x02))
       .field('b3', U8(0x03))
-      .field('size', U32(0xffffffff, false));
+      .field('size', U32BE(0xffffffff));
 
     const size = s.computeBufferSize();
     s.get('size').set(size);
@@ -376,13 +376,13 @@ describe('getters/setters/offsets', () => {
       .field('innerStruct',
         Struct('inner')
           .field('i1', U8(0x02))
-          .field('i2', U16(0x0304))
-          .field('i3', U32(0x05060708))
+          .field('i2', U16LE(0x0304))
+          .field('i3', U32LE(0x05060708))
           .field('i4', U8(0x09))
       )
       .field('b2', U8(0x0a))
       .field('pointer', U8(0xff))
-      .field('b4', U16(0x0b0c));
+      .field('b4', U16LE(0x0b0c));
 
     const offset = s.getDeepOffset('innerStruct.i3');
     s.get('pointer').set(offset);
@@ -398,15 +398,15 @@ describe('getters/setters/offsets', () => {
           .field('i1', U8(0x02))
           .field('innerInner',
             Struct('inner2')
-              .field('i2', U16(0x0304))
-              .field('i3', U32(0x05060708))
+              .field('i2', U16LE(0x0304))
+              .field('i3', U32LE(0x05060708))
               .field('i4', U8(0x09))
           )
           .field('i2', U8(0x0a))
       )
       .field('b2', U8(0x0b))
       .field('size', U8(0xff))
-      .field('b4', U16(0x0c0d));
+      .field('b4', U16LE(0x0c0d));
 
     const size = s.getDeep('innerStruct.innerInner.i2').computeBufferSize();
     s.get('size').set(size);
@@ -423,15 +423,15 @@ describe('getters/setters/offsets', () => {
             .field('i1', U8(0x02))
             .field('innerInner',
               Struct('inner2')
-                .field('i2', U16(0x0304))
-                .field('i3', U32(0x05060708))
+                .field('i2', U16LE(0x0304))
+                .field('i3', U32LE(0x05060708))
                 .field('i4', U8(0x09))
             )
             .field('i2', U8(0x0a))
         )
         .field('b2', U8(0x0b))
         .field('size', U8(0xff))
-        .field('b4', U16(0x0c0d));
+        .field('b4', U16LE(0x0c0d));
       s.getDeep('innerStruct.innerInner.i2.i2');
     },
     `Can't read i2 from non-struct`
@@ -445,15 +445,15 @@ describe('getters/setters/offsets', () => {
           .field('i1', U8(0x02))
           .field('innerInner',
             Struct('inner2')
-              .field('i2', U16(0x0304))
-              .field('i3', U32(0x05060708))
+              .field('i2', U16LE(0x0304))
+              .field('i3', U32LE(0x05060708))
               .field('i4', U8(0x09))
           )
           .field('i2', U8(0x0a))
       )
       .field('b2', U8(0x0b))
       .field('size', U8(0xff))
-      .field('b4', U16(0x0c0d));
+      .field('b4', U16LE(0x0c0d));
 
     const size = s.getDeep('innerStruct.innerInner').computeBufferSize();
     s.get('size').set(size);
@@ -466,14 +466,14 @@ describe('bit structs', () => {
   compareExpectedBytesTest('Aligned BitStruct',
     Struct('test')
       .field('b1',
-        BitStruct('bits', false)
+        BitStructMSB('bits')
           .flag('f1', 1)
           .flag('f2', 0)
           .multiBit('f3', 4, 0b1101)
           .multiBit('f4', 2, 0b01)
       )
       .field('b2',
-        BitStruct('bits', true)
+        BitStructLSB('bits')
           .flag('f1', 1)
           .flag('f2', 0)
           .multiBit('f3', 4, 0b1101)
@@ -485,13 +485,13 @@ describe('bit structs', () => {
   compareExpectedBytesTest('Unaligned BitStruct',
     Struct('test')
       .field('b1',
-        BitStruct('bits', false)
+        BitStructMSB('bits')
           .flag('f1', 1)
           .flag('f2', 0)
           .multiBit('f3', 4, 0b1101)
       )
       .field('b2',
-        BitStruct('bits', true)
+        BitStructLSB('bits')
           .flag('f1', 1)
           .flag('f2', 0)
           .multiBit('f3', 4, 0b1101)
