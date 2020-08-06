@@ -11,7 +11,7 @@ This example shows:
 [**Listen to the generated audio**](./squares.wav)
 
 ```javascript
-const { Struct, S16s, RawString, SizeOf32, U32, U16 } = require('construct-js');
+const { Struct, S16LEs, RawString, SizeOf32LE, U32LE, U16LE } = require('construct-js');
 const fs = require('fs');
 const path = require('path');
 
@@ -33,7 +33,7 @@ const squareAtFreq = (seconds, freq) => {
   });
 };
 
-const soundData = S16s([
+const soundData = S16LEs([
   ...squareAtFreq(0.1, 261.63), // C4
   ...squareAtFreq(0.1, 293.66), // D4
   ...squareAtFreq(0.1, 329.63), // E4
@@ -49,24 +49,23 @@ const wave = Struct('wave');
 
 const header = Struct('header')
   .field('magic', RawString('RIFF'))
-  .field('chunkSize', SizeOf32(wave))
+  .field('chunkSize', SizeOf32LE(wave))
   .field('format', RawString('WAVE'))
 
 const formatSection = Struct('formatSection')
   .field('subChunk1ID', RawString('fmt '))
-  .field('subChunk1Size', U32(16, true))
-  .field('audioFormat', U16(1, true))
-  .field('numChannels', U16(1, true))
-  .field('sampleRate', U32(sampleRate, true))
-  .field('byteRate', U32(sampleRate * 2, true))
-  .field('blockAlign', U16(2, true))
-  .field('bitsPerSample', U16(16, true));
+  .field('subChunk1Size', U32LE(16))
+  .field('audioFormat', U16LE(1))
+  .field('numChannels', U16LE(1))
+  .field('sampleRate', U32LE(sampleRate))
+  .field('byteRate', U32LE(sampleRate * 2))
+  .field('blockAlign', U16LE(2))
+  .field('bitsPerSample', U16LE(16));
 
 const dataSection = Struct('dataSection')
   .field('subChunk2ID', RawString('data'))
-  .field('subChunk2Size', SizeOf32(soundData))
+  .field('subChunk2Size', SizeOf32LE(soundData))
   .field('soundData', soundData);
-
 
 wave
   .field('header', header)
