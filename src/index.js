@@ -269,6 +269,32 @@ class Pointer32 extends PointerBase {
   }
 }
 
+class RawString extends DataValue {
+  constructor(str) {
+    super(1, 'Uint8', false, str.split('').map(c => c.charCodeAt(0)));
+    this.hasInitialised = true;
+  }
+  set(str) {
+    if (!this.hasInitialised) {
+      return super.set(str);
+    }
+    return super.set(str.split('').map(c => c.charCodeAt(0)));
+  }
+}
+
+class NullTerminatedString extends DataValue {
+  constructor(str) {
+    super(1, 'Uint8', false, [...str.split('').map(c => c.charCodeAt(0)), 0]);
+    this.hasInitialised = true;
+  }
+  set(str) {
+    if (!this.hasInitialised) {
+      return super.set(str);
+    }
+    return super.set([...str.split('').map(c => c.charCodeAt(0)), 0]);
+  }
+}
+
 class Struct {
   constructor(name) {
     this.name = name;
@@ -475,7 +501,8 @@ class BitStruct extends Struct {
 }
 
 module.exports = {
-  RawString: (str, littleEndian = true) => new U8s(str.split('').map(c => c.charCodeAt(0)), littleEndian),
+  RawString: str => new RawString(str),
+  NullTerminatedString: str => new NullTerminatedString(str),
 
   U8s: (sizeOrDataArray, littleEndian = true) => new U8s(sizeOrDataArray, littleEndian),
   U16s: (sizeOrDataArray, littleEndian = true) => new U16s(sizeOrDataArray, littleEndian),

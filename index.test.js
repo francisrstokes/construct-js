@@ -8,6 +8,7 @@ const {
   Pointer8, Pointer16, Pointer32,
   SizeOf8, SizeOf16, SizeOf32,
   RawString,
+  NullTerminatedString,
   BitStruct
 } = require('./src');
 
@@ -69,6 +70,34 @@ describe('basic', () => {
       .field('b2', RawString("hello"))
       .field('b3', U16(0x0000)),
     [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 0]
+  );
+
+  const stringStruct = Struct('test')
+  .field('b1', U8(0x01))
+  .field('b2', RawString("hello"))
+  .field('b3', U16(0x0000));
+  stringStruct.get('b2').set('different string')
+  compareExpectedBytesTest('Modifying the RawString value',
+    stringStruct,
+    [1, ...("different string".split('').map(x => x.charCodeAt(0))), 0, 0]
+  );
+
+  compareExpectedBytesTest('Struct with null terminated string',
+    Struct('test')
+      .field('b1', U8(0x01))
+      .field('b2', NullTerminatedString("hello"))
+      .field('b3', U16(0x0203)),
+    [1, ...("hello".split('').map(x => x.charCodeAt(0))), 0, 3, 2]
+  );
+
+  const stringStruct2 = Struct('test')
+  .field('b1', U8(0x01))
+  .field('b2', NullTerminatedString("hello"))
+  .field('b3', U16(0x0203));
+  stringStruct2.get('b2').set('different string')
+  compareExpectedBytesTest('Modifying the RawString value',
+    stringStruct2,
+    [1, ...("different string".split('').map(x => x.charCodeAt(0))), 0, 3, 2]
   );
 
   compareExpectedBytesTest('Little endian U16',
