@@ -117,6 +117,10 @@ fs.writeFileSync('./test.zip', fileBuffer);
 
 ## Changelog
 
+### 0.6.0
+
+- Refactor the user-facing API to remove endianness flags in fields and instead create a field for little endian and big endian variations.
+
 ### 0.5.0
 
 - Added `NullTerminatedString` field
@@ -211,11 +215,11 @@ Returns a regular `Array` representation of the Struct.
 
 ### BitStruct
 
-`BitStruct(name, lsbFirst = true)`
+`BitStructLSB(name)` and `BitStructMSB(name)`
 
-Creates a BitStruct object, for storing and addressing data on the sub-byte level. If *lsbFirst* is `true`, the resulting buffer will consider the fields to be ordered from the 0th bit i.e. the first field in the BitStruct will be the least significant bit in the Buffer. If *lsbFirst* is `false`, the Buffer will contain the fields in the order they are specified.
+Creates a BitStruct object, for storing and addressing data on the sub-byte level. If using `BitStructLSB`, the resulting buffer will consider the fields to be ordered from the 0th bit i.e. the first field in the BitStruct will be the least significant bit in the Buffer. If using `BitStructMSB`, the Buffer will write the bits in the opposite order
 
-**Note**: When [bitStruct.toBuffer()](#tobuffer-1) is used, the resulting buffer will be byte aligned. This means if the size of the BitStruct is 12-bits, the resulting buffer will be 16-bits (2 bytes). When *lsbFirst* is true, the most significant bits will be padded.
+**Note**: When [bitStruct.toBuffer()](#tobuffer-1) is used, the resulting buffer will be byte aligned. This means if the size of the BitStruct is 12-bits, the resulting buffer will be 16-bits (2 bytes). When using `BitStructLSB`, the most significant bits will be padded.
 
 #### flag
 
@@ -281,15 +285,15 @@ A single 8-bit unsigned value.
 
 #### U16
 
-`U16(value, littleEndian = true)`
+`U16LE(value)` or `U16BE(value)`
 
-A single 16-bit unsigned value.
+A single 16-bit unsigned value, in either big or little endian byte order.
 
 #### U32
 
-`U32(value, littleEndian = true)`
+`U32LE(value)` or `U32BE(value)`
 
-A single 32-bit unsigned value.
+A single 32-bit unsigned value, in either big or little endian byte order.
 
 #### S8
 
@@ -299,15 +303,15 @@ A single 8-bit signed value.
 
 #### S16
 
-`S16(value, littleEndian = true)`
+`S16LE(value)` or `S16BE(value)`
 
-A single 16-bit signed value.
+A single 16-bit signed value, in either big or little endian byte order.
 
 #### S32
 
-`S32(value, littleEndian = true)`
+`S32LE(value)` or `S32BE(value)`
 
-A single 32-bit signed value.
+A single 32-bit signed value, in either big or little endian byte order.
 
 #### RawString
 
@@ -339,17 +343,17 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### U16s
 
-`U16s(array | number, littleEndian = true)`
+`U16LEs(array | number)` or `U16BEs(array | number)`
 
-A collection of 16-bit unsigned values.
+A collection of 16-bit unsigned values, in either big or little endian byte order.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
 #### U32s
 
-`U32s(array | number, littleEndian = true)`
+`U32LEs(array | number)` or `U32BEs(array | number)`
 
-A collection of 32-bit unsigned values.
+A collection of 32-bit unsigned values, in either big or little endian byte order.
 
 If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
 
@@ -363,17 +367,17 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### S16s
 
-`S16s(array | number, littleEndian = true)`
+`S16LEs(array | number)` or `S16BEs(array | number)`
 
-A collection of 16-bit signed values.
+A collection of 16-bit signed values, in either big or little endian byte order.
 
 If the argument provided is an array, then the size of the field is `array.length * 2` bytes, with each value corresponding to an 16-bit interpretation of that value.
 
 #### S32s
 
-`S32s(array | number, littleEndian = true)`
+`S32LEs(array | number)` or `S32BEs(array | number)`
 
-A collection of 32-bit signed values.
+A collection of 32-bit signed values, in either big or little endian byte order.
 
 If the argument provided is an array, then the size of the field is `array.length * 4` bytes, with each value corresponding to an 32-bit interpretation of that value.
 
@@ -385,15 +389,15 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### Pointer16
 
-`Pointer16(struct, path, littleEndian = true)`
+`Pointer16(struct, path)` or `Pointer16(struct, path)`
 
-`Pointer16` takes a [Struct](#Struct), a path, and an endianness flag, and represents a 16-bit pointer (offset) to the field specified by the path in the provided struct.
+`Pointer16 functions` take a [Struct](#Struct) and a path, and represents a 16-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
 
 #### Pointer32
 
-`Pointer32(struct, path, littleEndian = true)`
+`Pointer32(struct, path)` or `Pointer32(struct, path)`
 
-`Pointer32` takes a [Struct](#Struct), a path, and an endianness flag, and represents a 32-bit pointer (offset) to the field specified by the path in the provided struct.
+`Pointer32 functions` take a [Struct](#Struct) and a path, and represents a 32-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
 
 #### SizeOf8
 
@@ -403,12 +407,12 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### SizeOf16
 
-`SizeOf16(structOrField, littleEndian = true)`
+`SizeOf16LE(structOrField)` or `SizeOf16BE(structOrField)`
 
-`SizeOf16` takes a [Struct](#Struct) or a [Field](#Field), and an endianness flag, and represents the size of the Struct or the Field as a 16-bit unsigned integer.
+`SizeOf16 functions` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 16-bit unsigned integer - in either little endian or big endian format.
 
 #### SizeOf32
 
-`SizeOf32(structOrField, littleEndian = true)`
+`SizeOf32LE(structOrField)` or `SizeOf32BE(structOrField)`
 
-`SizeOf32` takes a [Struct](#Struct) or a [Field](#Field), and an endianness flag, and represents the size of the Struct or the Field as a 32-bit unsigned integer.
+`SizeOf32 functions` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 32-bit unsigned integer - in either little endian or big endian format.
