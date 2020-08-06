@@ -7,7 +7,7 @@ BMP ranges from being a fairly simple format in some versions, to more complex w
 ```javascript
 const fs = require('fs');
 const path = require('path');
-const { Struct, RawString, U16, U32, U8s, SizeOf32 } = require('construct-js');
+const { Struct, RawString, U16LE, U32LE, U8s, SizeOf32LE } = require('construct-js');
 
 const width = 512;
 const height = 512;
@@ -16,23 +16,23 @@ const bmpFile = Struct('bmpFile');
 
 const header = Struct('header')
   .field('magic', RawString('BM'))
-  .field('size', SizeOf32(bmpFile))
-  .field('reserved1', U16(0, true))
-  .field('reserved2', U16(0, true))
-  .field('startOffset', U32(0, true));
+  .field('size', SizeOf32LE(bmpFile))
+  .field('reserved1', U16LE(0))
+  .field('reserved2', U16LE(0))
+  .field('startOffset', U32LE(0));
 
 const dibHeader = Struct('dibHeader')
-  .field('size', U32(40, true))
-  .field('width', U32(width, true))
-  .field('height', U32(height, true))
-  .field('colorPlanes', U16(1, true))
-  .field('bitsPerPixel', U16(8, true))
-  .field('compression', U32(0, true))
-  .field('compressedSize', U32(0, true))
-  .field('xPixelsPerMeter', U32(0, true))
-  .field('yPixelsPerMeter', U32(0, true))
-  .field('totalColors', U32(0, true))
-  .field('importantColors', U32(0, true));
+  .field('size', U32LE(40))
+  .field('width', U32LE(width))
+  .field('height', U32LE(height))
+  .field('colorPlanes', U16LE(1))
+  .field('bitsPerPixel', U16LE(8))
+  .field('compression', U32LE(0))
+  .field('compressedSize', U32LE(0))
+  .field('xPixelsPerMeter', U32LE(0))
+  .field('yPixelsPerMeter', U32LE(0))
+  .field('totalColors', U32LE(0))
+  .field('importantColors', U32LE(0));
 
 // The color table consists of 256 grayscale values
 const colorTableValues = Array.from({length: 256}).reduce(
@@ -61,14 +61,6 @@ const pixelData = Array.from({length: width*height}, (_, i) => {
 
 // Set the pixels in the structure
 pixels.field('data', U8s(pixelData));
-
-// Calculate the file size and set it in the header
-const totalSize = bmpFile.computeBufferSize();
-header.get('size').set(totalSize);
-
-// Calculate the offset to the pixel data and set it in the header
-const pixelOffset = bmpFile.getOffset('pixels');
-header.get('startOffset').set(pixelOffset);
 
 // Serialise the BMP to a buffer and write it to a file
 const buf = bmpFile.toBuffer();
