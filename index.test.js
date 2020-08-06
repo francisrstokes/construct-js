@@ -344,6 +344,9 @@ describe('getters/setters/offsets', () => {
   it('getting a pointer to a field in a struct', () => {
     const s = Struct('test')
       .field('b1', U8(0x01))
+      .field('preStruct',
+        Struct('hello').field('s1', U8(0xff))
+      )
       .field('pointee', U16(0x0203))
       .field('b3', U32(0x04050607))
       .field('pointer', U16(0xeeee))
@@ -351,7 +354,7 @@ describe('getters/setters/offsets', () => {
     const offset = s.getOffset('pointee');
     s.get('pointer').set(offset);
 
-    compareExpectedBytes(s, [1, 3, 2, 7, 6, 5, 4, 1, 0, 9, 8]);
+    compareExpectedBytes(s, [1, 0xff, 3, 2, 7, 6, 5, 4, 2, 0, 9, 8]);
   });
 
   it('referencing a size in a struct', () => {
