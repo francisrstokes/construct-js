@@ -502,12 +502,12 @@ describe('bit structs', () => {
 });
 
 describe('values', () => {
-  it('DataValue.value()', () => {
+  it('Field.value()', () => {
     const s = Struct('s').field('a', U8(0xff));
     assert.equal(s.get('a').value(), 0xff);
   });
 
-  it('DataValue.value() is the same regardless of endianness', () => {
+  it('Field.value() is the same regardless of endianness', () => {
     const s1 = Struct('s').field('a', U16LE(0xffee));
     const s2 = Struct('s').field('a', U16BE(0xffee));
     assert.equal(s1.get('a').value(), 0xffee);
