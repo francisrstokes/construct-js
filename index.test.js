@@ -500,3 +500,64 @@ describe('bit structs', () => {
     [0b10110100, 0b110101, 0xff]
   );
 });
+
+describe('values', () => {
+  it('DataValue.value()', () => {
+    const s = Struct('s').field('a', U8(0xff));
+    assert.equal(s.get('a').value(), 0xff);
+  });
+
+  it('DataValue.value() is the same regardless of endianness', () => {
+    const s1 = Struct('s').field('a', U16LE(0xffee));
+    const s2 = Struct('s').field('a', U16BE(0xffee));
+    assert.equal(s1.get('a').value(), 0xffee);
+    assert.equal(s2.get('a').value(), 0xffee);
+  });
+
+  it('RawString.value()', () => {
+    const s = Struct('s').field('a', RawString('hello world'));
+    assert.equal(s.get('a').value(), 'hello world');
+  });
+
+  it('NullTerminatedString.value()', () => {
+    const s = Struct('s').field('a', NullTerminatedString('hello world'));
+    assert.equal(s.get('a').value(), 'hello world');
+  });
+
+  it('SizeOf.value()', () => {
+    const s1 = Struct('s');
+    s1.field('a', SizeOf8(s1));
+    assert.equal(s1.get('a').value(), 1);
+
+    const s2 = Struct('s');
+    s2.field('a', SizeOf16LE(s2));
+    assert.equal(s2.get('a').value(), 2);
+
+    const s3 = Struct('s');
+    s3.field('a', SizeOf16BE(s3));
+    assert.equal(s3.get('a').value(), 2);
+  });
+
+  it('Pointer.value()', () => {
+    const s1 = Struct('s');
+    s1
+      .field('a', Pointer8(s1, 'c'))
+      .field('b', U16LE(0))
+      .field('c', U32LE(0));
+    assert.equal(s1.get('a').value(), 3);
+
+    const s2 = Struct('s');
+    s2
+      .field('a', Pointer16BE(s2, 'c'))
+      .field('b', U16LE(0))
+      .field('c', U32LE(0));
+    assert.equal(s2.get('a').value(), 4);
+
+    const s3 = Struct('s');
+    s3
+      .field('a', Pointer32LE(s3, 'c'))
+      .field('b', U16LE(0))
+      .field('c', U32LE(0));
+    assert.equal(s3.get('a').value(), 6);
+  });
+});

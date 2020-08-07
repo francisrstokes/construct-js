@@ -78,6 +78,13 @@ class DataValue {
   computeBufferSize() {
     return this.byteLength;
   }
+
+  value() {
+    if (this.raw.length === 1) {
+      return this.raw[0]
+    }
+    return [...this.raw];
+  }
 }
 
 class U8s extends DataValue {
@@ -176,6 +183,7 @@ class PointerBase extends DataValue {
     this.isReferential = true;
     this.set(struct, path);
   }
+
   set(struct, path) {
     if (!this.isReferential) return;
 
@@ -185,11 +193,12 @@ class PointerBase extends DataValue {
     this.struct = struct;
     this.path = path;
   }
+
   toBytes() {
-    const value = this.struct.getDeepOffset(this.path);
-    super.set([value]);
+    super.set([this.value()]);
     return super.toBytes();
   }
+
   writeBytes(bytes, offset) {
     const theseBytes = this.toBytes();
     theseBytes.forEach((value, index) => {
@@ -197,6 +206,10 @@ class PointerBase extends DataValue {
     });
 
     return offset + theseBytes.length;
+  }
+
+  value() {
+    return this.struct.getDeepOffset(this.path);
   }
 }
 
@@ -206,6 +219,7 @@ class SizeOfBase extends DataValue {
     this.isReferential = true;
     this.set(structOrField);
   }
+
   set(structOrField) {
     if (!this.isReferential) return;
 
@@ -216,13 +230,14 @@ class SizeOfBase extends DataValue {
       throw new Error('argument must be a Struct or a Field');
     }
 
-    this.structOrField = structOrField
+    this.structOrField = structOrField;
   }
+
   toBytes() {
-    const value = this.structOrField.computeBufferSize();
-    super.set([value]);
+    super.set([this.value()]);
     return super.toBytes();
   }
+
   writeBytes(bytes, offset) {
     const theseBytes = this.toBytes();
     theseBytes.forEach((value, index) => {
@@ -230,6 +245,10 @@ class SizeOfBase extends DataValue {
     });
 
     return offset + theseBytes.length;
+  }
+
+  value() {
+    return this.structOrField.computeBufferSize();
   }
 }
 
@@ -274,11 +293,16 @@ class RawString extends DataValue {
     super(1, 'Uint8', false, str.split('').map(c => c.charCodeAt(0)));
     this.hasInitialised = true;
   }
+
   set(str) {
     if (!this.hasInitialised) {
       return super.set(str);
     }
     return super.set(str.split('').map(c => c.charCodeAt(0)));
+  }
+
+  value() {
+    return this.raw.map(c => String.fromCharCode(c)).join('');
   }
 }
 
@@ -287,11 +311,16 @@ class NullTerminatedString extends DataValue {
     super(1, 'Uint8', false, [...str.split('').map(c => c.charCodeAt(0)), 0]);
     this.hasInitialised = true;
   }
+
   set(str) {
     if (!this.hasInitialised) {
       return super.set(str);
     }
     return super.set([...str.split('').map(c => c.charCodeAt(0)), 0]);
+  }
+
+  value() {
+    return this.raw.slice(0, this.raw.length-1).map(c => String.fromCharCode(c)).join('');
   }
 }
 
@@ -429,7 +458,6 @@ class Bits {
 }
 
 class BitStruct extends Struct {
-
   constructor(name, lsbFirst = true) {
     super(name);
     this._lsbFirst = lsbFirst;
