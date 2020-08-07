@@ -1,4 +1,4 @@
-class DataValue {
+class Field {
   constructor(byteWidth, dataViewFn, isSingleValue, sizeOrDataArray, littleEndian = true) {
     this.byteWidth = byteWidth;
     this._dataViewSet = `set${dataViewFn}`;
@@ -87,43 +87,43 @@ class DataValue {
   }
 }
 
-class U8s extends DataValue {
+class U8s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(1, 'Uint8', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class U16s extends DataValue {
+class U16s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(2, 'Uint16', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class U32s extends DataValue {
+class U32s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(4, 'Uint32', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class S8s extends DataValue {
+class S8s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(1, 'Int8', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class S16s extends DataValue {
+class S16s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(2, 'Int16', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class S32s extends DataValue {
+class S32s extends Field {
   constructor(sizeOrDataArray, littleEndian = true) {
     super(4, 'Int32', false, sizeOrDataArray, littleEndian);
   }
 }
 
-class U8 extends DataValue {
+class U8 extends Field {
   constructor(value, littleEndian = true) {
     super(1, 'Uint8', true, value, littleEndian);
   }
@@ -132,7 +132,7 @@ class U8 extends DataValue {
   }
 }
 
-class U16 extends DataValue {
+class U16 extends Field {
   constructor(value, littleEndian = true) {
     super(2, 'Uint16', true, value, littleEndian);
   }
@@ -141,7 +141,7 @@ class U16 extends DataValue {
   }
 }
 
-class U32 extends DataValue {
+class U32 extends Field {
   constructor(value, littleEndian = true) {
     super(4, 'Uint32', true, value, littleEndian);
   }
@@ -150,7 +150,7 @@ class U32 extends DataValue {
   }
 }
 
-class S8 extends DataValue {
+class S8 extends Field {
   constructor(value, littleEndian = true) {
     super(1, 'Int8', true, value, littleEndian);
   }
@@ -159,7 +159,7 @@ class S8 extends DataValue {
   }
 }
 
-class S16 extends DataValue {
+class S16 extends Field {
   constructor(value, littleEndian = true) {
     super(2, 'Int16', true, value, littleEndian);
   }
@@ -168,7 +168,7 @@ class S16 extends DataValue {
   }
 }
 
-class S32 extends DataValue {
+class S32 extends Field {
   constructor(value, littleEndian = true) {
     super(4, 'Int32', true, value, littleEndian);
   }
@@ -177,7 +177,7 @@ class S32 extends DataValue {
   }
 }
 
-class PointerBase extends DataValue {
+class PointerBase extends Field {
   constructor(byteLength, dataViewFn, struct, path, littleEndian = true) {
     super(byteLength, dataViewFn, true, 0, littleEndian);
     this.isReferential = true;
@@ -213,7 +213,7 @@ class PointerBase extends DataValue {
   }
 }
 
-class SizeOfBase extends DataValue {
+class SizeOfBase extends Field {
   constructor(byteLength, dataViewFn, structOrField, littleEndian = true) {
     super(byteLength, dataViewFn, true, 0, littleEndian);
     this.isReferential = true;
@@ -224,7 +224,7 @@ class SizeOfBase extends DataValue {
     if (!this.isReferential) return;
 
     const isStruct = structOrField instanceof Struct;
-    const isField = structOrField instanceof DataValue;
+    const isField = structOrField instanceof Field;
 
     if (!isStruct && !isField) {
       throw new Error('argument must be a Struct or a Field');
@@ -288,7 +288,7 @@ class Pointer32 extends PointerBase {
   }
 }
 
-class RawString extends DataValue {
+class RawString extends Field {
   constructor(str) {
     super(1, 'Uint8', false, str.split('').map(c => c.charCodeAt(0)));
     this.hasInitialised = true;
@@ -306,7 +306,7 @@ class RawString extends DataValue {
   }
 }
 
-class NullTerminatedString extends DataValue {
+class NullTerminatedString extends Field {
   constructor(str) {
     super(1, 'Uint8', false, [...str.split('').map(c => c.charCodeAt(0)), 0]);
     this.hasInitialised = true;
