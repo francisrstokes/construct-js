@@ -28,6 +28,7 @@ npm i construct-js
     - [3.2.6 toArrayBuffer](#toArrayBuffer-1)
     - [3.2.7 toArray](#toArray-1)
   - [3.3 Fields](#fields)
+    - [3.3.0 Common Methods](#Common-Methods)
     - [3.3.1 U8](#U8)
     - [3.3.2 U16](#U16)
     - [3.3.3 U32](#U32)
@@ -116,6 +117,10 @@ fs.writeFileSync('./test.zip', fileBuffer);
 ```
 
 ## Changelog
+
+### 0.6.1
+
+- Add `.value()` method to fields.
 
 ### 0.6.0
 
@@ -265,6 +270,8 @@ Returns a byte-aligned `Array` representing the BitStruct.
 
 ### Fields
 
+#### Common Methods
+
 All fields contain some common properties and methods. These are:
 
 `.set(value | values)`
@@ -275,7 +282,11 @@ Which sets either the value or values of the field.
 
 Manually sets this field to little or big endian.
 
-The rest of the properties should be considered private and not modified directly.
+`.value()`
+
+Returns the value of this field, as originally specified.
+
+**The rest of the properties should be considered private and not modified directly.**
 
 #### U8
 
