@@ -15,5 +15,6 @@ intentions then feel free to leave elaboration comments below!
   - [ ] Are the changes tested (using the existing format, as far as is possible?)
   - [ ] Are the changes documented in the readme with a suitable example?
   - [ ] Is the table of contents updated?
+  - [ ] Is the `index.d.ts` file updated, using the same (or appropriately modified) description as in the readme?
 - [ ] This PR introduces some other kind of change
   - Please explain the change below
