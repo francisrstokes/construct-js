@@ -400,15 +400,15 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### Pointer16
 
-`Pointer16(struct, path)` or `Pointer16(struct, path)`
+`Pointer16(struct, path)`
 
-`Pointer16 functions` take a [Struct](#Struct) and a path, and represents a 16-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
+`Pointer16` take a [Struct](#Struct) and a path, and represents a 16-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
 
 #### Pointer32
 
-`Pointer32(struct, path)` or `Pointer32(struct, path)`
+`Pointer32(struct, path)`
 
-`Pointer32 functions` take a [Struct](#Struct) and a path, and represents a 32-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
+`Pointer32` take a [Struct](#Struct) and a path, and represents a 32-bit pointer (offset) to the field specified by the path in the provided struct - in either little endian or big endian format.
 
 #### SizeOf8
 
@@ -418,12 +418,12 @@ If the argument provided is an array, then the size of the field is `array.lengt
 
 #### SizeOf16
 
-`SizeOf16LE(structOrField)` or `SizeOf16BE(structOrField)`
+`SizeOf16LE(structOrField)`
 
-`SizeOf16 functions` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 16-bit unsigned integer - in either little endian or big endian format.
+`SizeOf16` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 16-bit unsigned integer - in either little endian or big endian format.
 
 #### SizeOf32
 
-`SizeOf32LE(structOrField)` or `SizeOf32BE(structOrField)`
+`SizeOf32LE(structOrField)`
 
-`SizeOf32 functions` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 32-bit unsigned integer - in either little endian or big endian format.
+`SizeOf32` take a [Struct](#Struct) or a [Field](#Field), and represents the size of the Struct or the Field as a 32-bit unsigned integer - in either little endian or big endian format.
