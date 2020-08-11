@@ -1,6 +1,6 @@
 {
   "name": "construct-js",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
