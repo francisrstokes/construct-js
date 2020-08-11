@@ -118,6 +118,10 @@ fs.writeFileSync('./test.zip', fileBuffer);
 
 ## Changelog
 
+### 0.7.0
+
+- Add TypeScript definition file
+
 ### 0.6.1
 
 - Add `.value()` method to fields.
