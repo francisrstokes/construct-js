@@ -10,6 +10,7 @@
   "author": "Francis Stokes",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^14.0.27",
     "chai": "^4.2.0",
     "mocha": "^8.1.0",
     "nyc": "^15.1.0"
