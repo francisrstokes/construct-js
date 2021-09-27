@@ -1,6 +1,6 @@
 {
   "name": "construct-js",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
