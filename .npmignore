@@ -1,0 +1,12 @@
+.github/
+.nyc_output/
+.sketchpad/
+.vscode/
+coverage/
+examples/
+node_modules/
+src/
+
+index.test.ts
+readme.md
+tsconfig.json
