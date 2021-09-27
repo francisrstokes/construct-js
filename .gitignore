@@ -1,7 +1,9 @@
 node_modules/
 .sketchpad/
 /index.js
+/index.d.ts
 coverage/
 .vscode
 coverage/
 .nyc_output/
+dist/
