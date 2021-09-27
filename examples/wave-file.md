@@ -10,10 +10,10 @@ This example shows:
 
 [**Listen to the generated audio**](./squares.wav)
 
-```javascript
-const { Struct, S16LEs, RawString, SizeOf32LE, U32LE, U16LE } = require('construct-js');
-const fs = require('fs');
-const path = require('path');
+```typescript
+import { Struct, I16s, RawString, SizeOf32, U32, U16, Endian } from 'construct-js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 const sampleRate = 44100;
 
@@ -33,7 +33,7 @@ const squareAtFreq = (seconds, freq) => {
   });
 };
 
-const soundData = S16LEs([
+const soundData = I16s([
   ...squareAtFreq(0.1, 261.63), // C4
   ...squareAtFreq(0.1, 293.66), // D4
   ...squareAtFreq(0.1, 329.63), // E4
@@ -42,29 +42,29 @@ const soundData = S16LEs([
   ...squareAtFreq(0.1, 440.00), // A3
   ...squareAtFreq(0.1, 493.88), // B4
   ...squareAtFreq(0.1, 523.25), // C3
-], true);
+]);
 
 // Create a stub so that we can reference it in the header
 const wave = Struct('wave');
 
 const header = Struct('header')
   .field('magic', RawString('RIFF'))
-  .field('chunkSize', SizeOf32LE(wave))
-  .field('format', RawString('WAVE'))
+  .field('chunkSize', SizeOf32(wave))
+  .field('format', U32(0x57415645, Endian.Big)) // The string "RIFF" - specified as a 32-bit big endian integer for demo purposes
 
 const formatSection = Struct('formatSection')
   .field('subChunk1ID', RawString('fmt '))
-  .field('subChunk1Size', U32LE(16))
-  .field('audioFormat', U16LE(1))
-  .field('numChannels', U16LE(1))
-  .field('sampleRate', U32LE(sampleRate))
-  .field('byteRate', U32LE(sampleRate * 2))
-  .field('blockAlign', U16LE(2))
-  .field('bitsPerSample', U16LE(16));
+  .field('subChunk1Size', U32(16))
+  .field('audioFormat', U16(1))
+  .field('numChannels', U16(1))
+  .field('sampleRate', U32(sampleRate))
+  .field('byteRate', U32(sampleRate * 2))
+  .field('blockAlign', U16(2))
+  .field('bitsPerSample', U16(16));
 
 const dataSection = Struct('dataSection')
   .field('subChunk2ID', RawString('data'))
-  .field('subChunk2Size', SizeOf32LE(soundData))
+  .field('subChunk2Size', SizeOf32(soundData))
   .field('soundData', soundData);
 
 wave
@@ -72,5 +72,7 @@ wave
   .field('formatSection', formatSection)
   .field('dataSection', dataSection);
 
-fs.writeFileSync(path.join(__dirname, 'squares.wav'), wave.toBuffer());
+fs.writeFile(path.join(__dirname, 'squares.wav'), wave.toUint8Array()).then(() => {
+  console.log('Done writing wav file.');
+});
 ```
