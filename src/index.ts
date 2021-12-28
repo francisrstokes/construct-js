@@ -51,7 +51,7 @@ export class StructType implements IField {
   private alignment: StructAlignment;
   private paddingDirection: AlignmentPadding;
   private fields: Array<StructMember> = [];
-  private allFieldNames: Array<string> = [];
+  private fieldMap: Record<string, StructMember> = {};
   name: string;
 
   constructor(name: string, alignment = StructAlignment.Packed, paddingDirection = AlignmentPadding.AfterData) {
@@ -61,8 +61,8 @@ export class StructType implements IField {
   }
 
   get<T extends ConstructDataType>(name: string): T {
-    assert(this.allFieldNames.includes(name), `No field with name ${name} exists on Struct ${this.name}`);
-    return this.fields.find(f => f.name === name).field as T;
+    assert((name in this.fieldMap), `No field with name ${name} exists on Struct ${this.name}`);
+    return this.fieldMap[name].field as T;
   }
 
   getDeep<T extends ConstructDataType>(path: string): T {
@@ -95,7 +95,7 @@ export class StructType implements IField {
   }
 
   getOffset(name: string) {
-    assert(this.allFieldNames.includes(name), `No field with name ${name} exists on Struct ${this.name}`);
+    assert((name in this.fieldMap), `No field with name ${name} exists on Struct ${this.name}`);
 
     let total = 0;
     for (let { name: fName, field} of this.fields) {
@@ -111,7 +111,7 @@ export class StructType implements IField {
 
   field(name: string, item: ConstructDataType) {
     assert(
-      !this.allFieldNames.includes(name),
+      !(name in this.fieldMap),
       `A field already exists on Struct ${this.name} with name ${name}`
     );
     assert(
@@ -119,8 +119,9 @@ export class StructType implements IField {
       `Name "${name}" is not valid. Names can be made of letters, numbers, underscores, and dashes`
     );
 
-    this.fields.push({name, field: item});
-    this.allFieldNames.push(name);
+    const field = {name, field: item};
+    this.fields.push(field);
+    this.fieldMap[name] = field;
 
     return this;
   }
