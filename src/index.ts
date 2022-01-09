@@ -1,4 +1,4 @@
-const assert = (condition: boolean, message: string) => {
+function assert(condition: boolean, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
   }
@@ -76,7 +76,7 @@ export class StructType implements IField {
     }
 
     assert(nextPart instanceof StructType, `Item in path "${head}" is not a Struct`);
-    return (nextPart as StructType).getDeep<T>(tail.join('.'));
+    return nextPart.getDeep<T>(tail.join('.'));
   }
 
   getDeepOffset(path: string, startOffset = 0): number {
@@ -91,7 +91,7 @@ export class StructType implements IField {
     }
 
     assert(nextPart instanceof StructType, `Item in path "${head}" is not a Struct`);
-    return (nextPart as StructType).getDeepOffset(tail.join('.'), nextOffset);
+    return nextPart.getDeepOffset(tail.join('.'), nextOffset);
   }
 
   getOffset(name: string) {
